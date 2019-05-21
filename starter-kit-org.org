@@ -146,7 +146,10 @@ file using the `org-babel-lob-ingest' function.
   ;;
   (setq calendar-date-display-form '((if dayname (concat dayname ", ")) day ". " monthname " " year))
   (setq calendar-week-start-day 1)
+#+end_src
 
+** Combined Agenda iCal export customizations
+#+begin_src emacs-lisp
   (setq org-icalendar-combined-name "Org-mode Agenda")
   (setq org-icalendar-combined-description "Org-mode Agenda")
   (setq org-icalendar-use-scheduled '(event-if-not-todo event-if-todo))
@@ -165,6 +168,22 @@ file using the `org-babel-lob-ingest' function.
     (save-buffer))
   (add-hook 'org-before-save-iCalendar-file-hook 'strip-org-todo-from-ical)
   (add-hook 'org-after-save-iCalendar-file-hook 'set-file-coding-for-ical)
+#+end_src
+
+** Combined Agenda iCal export when saving org-files
+#+begin_src emacs-lisp
+  (defun my-org-agenda-redo-all-and-export ()
+    (interactive)
+    (when (derived-mode-p 'org-agenda-mode)
+	(dolist (buffer (buffer-list))
+	  (with-current-buffer buffer
+	    (when (derived-mode-p 'org-agenda-mode)
+	      (progn
+		(org-agenda-redo t)
+		(org-icalendar-combine-agenda-files 'async)))))))
+  (add-hook 'org-mode-hook
+	    (lambda()
+	      (add-hook 'after-save-hook 'my-org-agenda-redo-all-and-export nil 'make-it-local)))
 #+end_src
 
 ** Formatting CLOCKSUM lines
