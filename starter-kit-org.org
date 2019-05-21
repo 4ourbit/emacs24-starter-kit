@@ -404,6 +404,16 @@ Format used when creating CLOCKSUM lines and when generating a time duration
           (font-lock-fontify-buffer)))))
 #+END_SRC
 
+** Open pdfs in user-defined app
+PDFs visited in Org-mode either on export or links like [file+sys:links.pdf] are
+opened in user-defined `=my-pdf-viewer=' (%s is used as file placeholder).
+#+BEGIN_SRC emacs-lisp
+  (defun my/org-pdf-file-app ()
+    (add-to-list 'org-file-apps '("\\.pdf\\'" . my-pdf-viewer)))
+
+  (add-hook 'org-mode-hook #'my/org-pdf-file-app)
+#+END_SRC
+
 ** Activate Org-Cdlatex-mode
 #+BEGIN_SRC emacs-lisp
   (defun my/org-cdlatex-mode ()

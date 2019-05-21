@@ -436,7 +436,7 @@ description of package using describe-package.
     (setq ebib-file-search-dirs ebib-my-file-search-dirs)
     (setq ebib-notes-use-single-file ebib-my-annotations-file)
 
-    (add-to-list 'ebib-file-associations (cons "pdf" ebib-my-pdf-viewer))
+    (add-to-list 'ebib-file-associations (cons "pdf" my-pdf-viewer))
 
     (defun ebib-create-org-time-stamp (key db) (format-time-string (org-time-stamp-format (current-time) 'inactive)))
     (add-to-list 'ebib-notes-template-specifiers '(?Q . ebib-create-org-time-stamp))
