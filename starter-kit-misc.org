@@ -180,3 +180,17 @@ Use ':tangle no' to disable specific source blocks
   (setq battery-mode-line-format "%b%p%% %t")
   (display-battery-mode)
 #+END_SRC
+
+** undo/redo
+Undo/redo history is a tree but manipulating this tree is a challenge. With
+undo-tree you can press C-x u and view graphical representation of undo/redo
+history. In undo-tree buffer press d to toggle diff and t to toggle timestamps,
+q to quit and C-q to abort. See undo-tree-mode help for details or better
+description of package using describe-package.
+
+#+BEGIN_SRC emacs-lisp
+  (starter-kit-install-if-needed 'undo-tree)
+  (require 'undo-tree)
+  (global-undo-tree-mode)
+#+END_SRC
+
