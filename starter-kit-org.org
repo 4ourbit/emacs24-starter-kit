@@ -147,8 +147,8 @@ file using the `org-babel-lob-ingest' function.
   (setq calendar-date-display-form '((if dayname (concat dayname ", ")) day ". " monthname " " year))
   (setq calendar-week-start-day 1)
 
-  (setq org-icalendar-combined-name "OrgMode Agenda")
-  (setq org-icalendar-combined-description "OrgMode Agenda")
+  (setq org-icalendar-combined-name "Org-mode Agenda")
+  (setq org-icalendar-combined-description "Org-mode Agenda")
   (setq org-icalendar-use-scheduled '(event-if-not-todo event-if-todo))
   (setq org-icalendar-alarm-time 5)
   (setq org-icalendar-date-time-format ":%Y%m%dT%H%M%SZ")
