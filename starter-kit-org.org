@@ -379,3 +379,29 @@ Format used when creating CLOCKSUM lines and when generating a time duration
         (if (eq major-mode 'org-mode)
           (font-lock-fontify-buffer)))))
 #+END_SRC
+
+** Activate Org-Cdlatex-mode
+#+BEGIN_SRC emacs-lisp
+  (defun my/org-cdlatex-mode ()
+    ;; apostrophe for backtick
+    ;; (setq cdlatex-math-symbol-prefix 37)
+    (org-cdlatex-mode)
+
+    ;; dollar initiates latex region
+    (setq-local electric-pair-pairs (append electric-pair-pairs '((?$ . ?$))))
+    (setq-local electric-pair-text-pairs electric-pair-pairs)
+    ;; (local-set-key "$" 'cdlatex-dollar) does the same but not as smooth
+
+    ;; TODO visualize dollar pairs
+
+    ;; pretty entities will always be toggled on in org
+    ;; except when point is in latex region (for cdlatex to work properly)
+    (defun my/pretty-entities-post-command-hook ()
+      (let ((new-state (list (texmathp) org-pretty-entities)))
+        (cond
+         ((equal new-state '(t t)) (org-toggle-pretty-entities))
+         ((equal new-state '(nil nil)) (org-toggle-pretty-entities)))))
+    (add-hook 'post-command-hook  #'my/pretty-entities-post-command-hook nil :local)
+  )
+  (add-hook 'org-mode-hook #'my/org-cdlatex-mode)
+#+END_SRC

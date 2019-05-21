@@ -22,6 +22,8 @@
 ;; (define-key my-keys-minor-mode-map (kbd "M-ö") 'backward-kill-word)
 ;; (define-key input-decode-map (kbd "C-m") (kbd "<return>"))
 
+(add-to-list 'load-path (locate-user-emacs-file "src/"))
+
 (with-eval-after-load 'org
   (org-babel-load-file (expand-file-name "starter-kit-org.org" starter-kit-dir)))
 
