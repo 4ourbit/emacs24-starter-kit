@@ -156,23 +156,23 @@ file using the `org-babel-lob-ingest' function.
   (setq org-icalendar-alarm-time 5)
   (setq org-icalendar-date-time-format ":%Y%m%dT%H%M%SZ")
   (setq org-icalendar-include-body 0)
-  (defun strip-org-todo-from-ical ()
+  (defun my/strip-org-todo-from-ical ()
     (interactive)
     (save-excursion
         (goto-char (point-min))
         (while (re-search-forward "S: TODO " nil t)
           (replace-match ""))))
-  (defun set-file-coding-for-ical ()
+  (defun my/set-file-coding-for-ical ()
     (interactive)
     (set-buffer-file-coding-system 'utf-8)
     (save-buffer))
-  (add-hook 'org-before-save-iCalendar-file-hook 'strip-org-todo-from-ical)
-  (add-hook 'org-after-save-iCalendar-file-hook 'set-file-coding-for-ical)
+  (add-hook 'org-before-save-iCalendar-file-hook 'my/strip-org-todo-from-ical)
+  (add-hook 'org-after-save-iCalendar-file-hook 'my/set-file-coding-for-ical)
 #+end_src
 
 ** Combined Agenda iCal export when saving org-files
 #+begin_src emacs-lisp
-  (defun my-org-agenda-redo-all-and-export ()
+  (defun my/org-agenda-redo-all-and-export ()
     (interactive)
     (when (derived-mode-p 'org-agenda-mode)
 	(dolist (buffer (buffer-list))
@@ -183,7 +183,7 @@ file using the `org-babel-lob-ingest' function.
 		(org-icalendar-combine-agenda-files 'async)))))))
   (add-hook 'org-mode-hook
 	    (lambda()
-	      (add-hook 'after-save-hook 'my-org-agenda-redo-all-and-export nil 'make-it-local)))
+	      (add-hook 'after-save-hook 'my/org-agenda-redo-all-and-export nil 'make-it-local)))
 #+end_src
 
 ** Global enable agenda-follow-mode and narrow to task in indirect
