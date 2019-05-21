@@ -150,10 +150,10 @@ it's possible aspell isn't in your path
 
 ** Don't clutter up directories with files~
 Rather than saving backup files scattered all over the file system,
-let them live in the =backups/= directory inside of the starter kit.
+let them live in the =backup/= directory inside of the starter kit.
 #+begin_src emacs-lisp
 (setq backup-directory-alist `(("." . ,(expand-file-name
-                                        (concat starter-kit-dir "backups")))))
+                                        (concat starter-kit-dir "backup")))))
 #+end_src
 
 ** Default to unified diffs

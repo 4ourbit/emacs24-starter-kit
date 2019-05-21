@@ -14,7 +14,7 @@ ac-comphist.dat
 ido.last
 
 ## directories
-backups/*
+backup/*
 thumbs/*
 oddmuse/*
 eshell/*
@@ -25,6 +25,7 @@ elpa/*
 src/*
 themes/*
 url/*
+ltxpng/*
 
 ## exported and encrypted files
 *gpg
@@ -37,6 +38,7 @@ url/*
 
 ## org stuff
 .org-id-locations
+.org.clock
 
 ## ignore mail/gnus cruft for those who keep mail in this directory
 drafts
@@ -59,3 +61,13 @@ agent/*
 !literate-starter-kit-pkg.el
 literate-starter-kit/
 literate-starter-kit.tar
+
+/.mc-lists.el
+/.emacs.desktop
+/.emacs.desktop.lock
+/.ido.last
+/.recentf
+/org-clock-save.el
+/emacs-goodies-el
+/tramp
+/.savehist
