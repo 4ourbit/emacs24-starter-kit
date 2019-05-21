@@ -16,6 +16,13 @@ install them. Other dependencies are provided by Emacs 24.
   (global-set-key (kbd "C-x M-g") 'magit-dispatch-popup)
 #+end_src
 
+#+begin_src emacs-lisp
+  (add-hook 'magit-mode-hook
+        (lambda ()
+          (define-key magit-mode-map (kbd "C-j") 'magit-goto-next-section)
+          (define-key magit-mode-map (kbd "C-k") 'magit-goto-previous-section)))
+#+end_src
+
 ** Color Themes
 Emacs24 has build in support for saving and loading themes.
 
@@ -32,7 +39,9 @@ evaluated a theme is activated using the =load-theme= function.
 #+begin_src emacs-lisp 
   (when window-system
     (setq frame-title-format '(buffer-file-name "%f" ("%b")))
-    (blink-cursor-mode -1)
+    (setq blink-cursor-interval 0.5)
+    (set-default 'cursor-type '(bar . 2))
+    (blink-cursor-mode 1)
     (when (require 'mwheel nil 'no-error) (mouse-wheel-mode t)))
   
   (set-terminal-coding-system 'utf-8)
@@ -49,13 +58,13 @@ evaluated a theme is activated using the =load-theme= function.
         shift-select-mode nil
         truncate-partial-width-windows nil
         uniquify-buffer-name-style 'forward
-        whitespace-style '(trailing lines space-before-tab
-                                    indentation space-after-tab)
-        whitespace-line-column 100
         ediff-window-setup-function 'ediff-setup-windows-plain
         oddmuse-directory (concat starter-kit-dir "oddmuse")
         xterm-mouse-mode t
         save-place-file (concat starter-kit-dir "places"))
+
+  (starter-kit-install-if-needed 'color-theme-sanityinc-tomorrow)
+  (setq custom-safe-themes t)
 #+end_src
 
 ** Transparently open compressed files
@@ -65,6 +74,7 @@ evaluated a theme is activated using the =load-theme= function.
 
 ** Save a list of recent files visited.
 #+begin_src emacs-lisp 
+(setq recentf-max-saved-items 999)
 (recentf-mode 1)
 #+end_src emacs-lisp
 
@@ -74,22 +84,84 @@ evaluated a theme is activated using the =load-theme= function.
 (show-paren-mode 1)
 #+end_src
 
+** Insert matching pairs
+#+begin_src emacs-lisp 
+(electric-pair-mode 1)
+#+end_src
+
 ** ido mode
 ido-mode is like magic pixie dust!
 #+srcname: starter-kit-loves-ido-mode
 #+begin_src emacs-lisp 
 (when (> emacs-major-version 21)
-  (ido-mode t)
+  (ido-mode 'both)
   (setq ido-enable-prefix nil
         ido-enable-flex-matching t
         ido-create-new-buffer 'always
         ido-use-filename-at-point t
-        ido-max-prospects 10))
+        ido-max-prospects 8
+        ido-max-work-file-list 50
+        ido-unc-hosts (quote ido-unc-hosts-net-view)
+        ido-use-virtual-buffers t
+        ido-decorations (quote ("
+  ▶ " "" "
+    " "
+    ..." "  ▶ " "" "
+  ✗[No match]" "
+  ✓ [Matched]" "
+  ✗[Not readable]" "
+  ✗[Too big]" "
+  ↵ [Confirm]"))))
+#+end_src
+
+*** Fuzzier ido
+- Swaps the default ido flex matching with the more powerful [[https://github.com/lewang/flx][ido-flx]].
+#+srcname: starter-kit-flx-ido
+#+begin_src emacs-lisp
+  (starter-kit-install-if-needed 'flx-ido)
+  (flx-ido-mode t)
+#+end_src
+
+*** Use ido for magit and org
+#+begin_src emacs-lisp
+  (setq magit-completing-read-function 'magit-ido-completing-read
+        org-completion-use-ido t)
+#+end_src
+
+*** Use ido everywhere (else)
+[[https://github.com/DarwinAwardWinner/ido-ubiquitous][ido-ubiquitous]] replaces stock emacs completion with ido completion wherever it
+is possible to do so without breaking things, eg. `execute-extended-command'
+(M-x mode)
+#+srcname: starter-kit-ido-ubiquitous
+#+begin_src emacs-lisp
+  (ido-everywhere 1)
+  (starter-kit-install-if-needed 'ido-ubiquitous)
+  (ido-ubiquitous-mode 1)
+
+  (setq ido-ubiquitous-command-overrides
+    '(;; Disable, when installing smex
+      (enable exact "execute-extended-command")
+      (enable prefix "wl-")
+      (enable-old prefix "Info-")
+      (enable exact "webjump")
+      ;; https://github.com/DarwinAwardWinner/ido-ubiquitous/issues/28
+      (enable regexp "\\`\\(find\\|load\\|locate\\)-library\\'")
+      ;; https://github.com/DarwinAwardWinner/ido-ubiquitous/issues/37
+      ;; Org and Magit already support ido natively, see above
+      ;; (disable prefix "org-")
+      (disable prefix "magit-")))
+#+end_src
+
+*** Use ido for completion-at-point
+#+srcname: starter-kit-ido-at-point
+#+begin_src emacs-lisp
+  (starter-kit-install-if-needed 'ido-at-point)
 #+end_src
 
 ** Other, spell checking, tabs, imenu and a coding hook
 #+begin_src emacs-lisp 
-  (set-default 'indent-tabs-mode nil)
+  ;; use ethan-wspace to decide when inserting tabs or spaces
+  ;; (set-default 'indent-tabs-mode nil)
   (set-default 'indicate-empty-lines t)
   (set-default 'imenu-auto-rescan t)
 
@@ -105,6 +177,15 @@ ido-mode is like magic pixie dust!
   ;; Seed the random-number generator
   (random t)
 #+end_src
+
+*** ethan-wspace
+Obsoletes `mode-require-final-newlines' or `show-trailing-whitespace'
+
+#+BEGIN_SRC emacs-lisp
+  (starter-kit-install-if-needed 'ethan-wspace)
+  (setq mode-require-final-newline nil)
+  (global-ethan-wspace-mode t)
+#+END_SRC
 
 *** functions for prettier source code
 #+begin_src emacs-lisp
@@ -152,8 +233,9 @@ it's possible aspell isn't in your path
 Rather than saving backup files scattered all over the file system,
 let them live in the =backup/= directory inside of the starter kit.
 #+begin_src emacs-lisp
-(setq backup-directory-alist `(("." . ,(expand-file-name
-                                        (concat starter-kit-dir "backup")))))
+(setq backup-directory-alist `(("" . ,(expand-file-name (concat starter-kit-dir "backup"))))
+      delete-old-versions 'keep-all-versions
+      version-control '(t nil nil "Make numeric backup versions"))
 #+end_src
 
 ** Default to unified diffs
@@ -174,7 +256,52 @@ let them live in the =backup/= directory inside of the starter kit.
 * Starter Kit Misc Additions
 Use ':tangle no' to disable specific source blocks
 
+** Server mode
+#+BEGIN_SRC emacs-lisp
+  (server-start)
+#+END_SRC
+
+** My-Keys key bindings
+#+BEGIN_SRC emacs-lisp
+(defvar my-keys-minor-mode-map (make-keymap) "keys-mode keymap.")
+  (define-minor-mode my-keys-minor-mode
+    "A minor mode so that my key settings override any major modes." t " Keys"
+    'my-keys-minor-mode-map)
+  (defadvice load (after give-my-keybindings-priority)
+    "Try to ensure that my keybindings always have priority."
+    (if (not (eq (car (car minor-mode-map-alist)) 'my-keys-minor-mode))
+        (let ((mykeys (assq 'my-keys-minor-mode minor-mode-map-alist)))
+          (assq-delete-all 'my-keys-minor-mode minor-mode-map-alist)
+          (add-to-list 'minor-mode-map-alist mykeys))))
+(ad-activate 'load)
+(my-keys-minor-mode t)
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+(define-key my-keys-minor-mode-map (kbd "M-j")   'recenter-top-bottom) ; was `comment-indent-new-line'
+#+END_SRC
+
+*** SuperCollider
+#+BEGIN_SRC emacs-lisp
+(define-key my-keys-minor-mode-map (kbd "C-.") 'keyboard-escape-quit)
+#+END_SRC
+
+*** Atom Editor
+#+BEGIN_SRC emacs-lisp
+(define-key my-keys-minor-mode-map (kbd "C-M-o") 'switch-to-next-buffer) ; was `split-line'
+(define-key my-keys-minor-mode-map (kbd "M-k")   'kill-this-buffer)
+(define-key my-keys-minor-mode-map (kbd "C-o")   'next-multiframe-window) ; was `open-line'
+(define-key my-keys-minor-mode-map (kbd "C-S-o") 'previous-multiframe-window)
+(define-key my-keys-minor-mode-map (kbd "C-M-d") 'kill-line)
+(define-key my-keys-minor-mode-map (kbd "C-z")   'undo)
+(define-key my-keys-minor-mode-map (kbd "M--")   'completion-at-point) ; "M-/" @ us-en-layout
+#+END_SRC
+
 ** Toggle  Useful Emacs Modes
+#+BEGIN_SRC emacs-lisp
+  (toggle-indicate-empty-lines)
+#+END_SRC
+
 *** Show battery info in mode-line
 #+BEGIN_SRC emacs-lisp
   (setq battery-mode-line-format "%b%p%% %t")
@@ -194,3 +321,137 @@ description of package using describe-package.
   (global-undo-tree-mode)
 #+END_SRC
 
+*** Auto revert buffers when changed externally
+#+BEGIN_SRC emacs-lisp
+  (setq auto-revert-interval 0.5)
+  (global-auto-revert-mode t)
+#+END_SRC
+
+*** Remember open buffers and place of point
+#+BEGIN_SRC emacs-lisp
+  (toggle-save-place-globally)
+  (desktop-save-mode 1)
+  (desktop-read)
+#+END_SRC
+
+** Visual indications
+*** Show indentation guide lines
+#+BEGIN_SRC emacs-lisp :tangle no
+  (starter-kit-install-if-needed 'indent-guide)
+  (setq indent-guide-recursive t
+        indent-guide-char "╎")
+  (indent-guide-mode 1)
+#+END_SRC
+** multiple-cursors
+#+BEGIN_SRC emacs-lisp
+  (starter-kit-install-if-needed 'multiple-cursors)
+  (define-key my-keys-minor-mode-map (kbd "C-M-SPC") 'mc/mark-next-like-this) ; was `mark-sexp'
+#+END_SRC
+
+** expand-region
+#+BEGIN_SRC emacs-lisp
+  (starter-kit-install-if-needed 'expand-region)
+  (define-key my-keys-minor-mode-map (kbd "M-SPC")   'er/expand-region) ; was `mark-paragraph'
+  (define-key my-keys-minor-mode-map (kbd "M-S-SPC") 'er/contract-region)
+#+END_SRC
+
+** TODO ledger-mode
+# #+BEGIN_SRC emacs-lisp
+# (autoload 'ledger-mode "ledger-mode.el"
+#   "Major mode for editing ledger files" t)
+# (setq ledger-highlight-xact-under-point nil)
+#
+# ;; Install and set up Ledger-under-development
+# (add-to-list 'load-path "C:\\Repositories\\ledger\\lisp")
+# (require 'ledger-mode)
+#
+# ;; Ledger customizations
+# (setq ledger-binary-path "C:\\Repositories\\ledger\\build.vc10\\Release\\ledger.exe")
+#
+# (setq ledger-reports
+#       '(("stats" "ledger -f %(ledger-file) stats")
+#         ("sort" "ledger -f %(ledger-file) --sort d print")
+#         ("bal" "ledger -f %(ledger-file) bal")
+#         ("reg" "ledger -f %(ledger-file) reg")
+#         ("payee" "ledger -f %(ledger-file) reg @%(payee)")
+#         ("account" "ledger -f %(ledger-file) reg %(account)")))
+#
+# (setq ledger-post-account-alignment-column 2)
+# (setq ledger-post-amount-alignment-column 72)
+#
+# (add-hook 'org-mode-hook
+#           (lambda ()
+#             (setenv "PATH"
+#                     (concat
+#                      (getenv "PATH") ";"
+#                      "C:\\Repositories\\ledger\\build.vc10\\Release"))))
+# ;; allow to babel ledger in org mode
+# (require 'ob-ledger)
+# (push "Reconcile" popwin:special-display-config)
+# #+END_SRC
+** TODO emacs-goodies
+# #+BEGIN_SRC emacs-lisp
+# (add-to-list 'load-path "~/.emacs.d/emacs-goodies-el/")
+# (require 'emacs-goodies-el)
+# #+END_SRC
+
+# (package-initialize) is called automatically when package-enable-at-startup is not nil
+
+** TODO browse-kill-ring, dired+, expand
+# #+BEGIN_SRC emacs-lisp
+#   (starter-kit-install-if-needed 'browse-kill-ring)
+#   (browse-kill-ring-default-keybindings)
+#   (starter-kit-install-if-needed 'dired+)
+#   (starter-kit-install-if-needed 'markdown-mode)
+# #+END_SRC
+#
+** TODO popwin-mode
+# #+BEGIN_SRC emacs-lisp
+#   ; pop up window for help, browse-kill-ring
+#   (starter-kit-install-if-needed 'popwin)
+#  (push '(Custom-mode) popwin:special-display-config)
+#   (push '(Info-mode) popwin:special-display-config)
+#   (push "*Kill Ring*" popwin:special-display-config)
+#  ;; Use Popup windows for calendar
+#   (push '(Calendar-mode) popwin:special-display-config)
+#  ;; Use Popup windows for magit
+#   (push '(git-commit-mode :stick t) popwin:special-display-config)
+#   (push '("*magit-commit*" :stick t) popwin:special-display-config)
+#   (push "*magit-diff*" popwin:special-display-config)
+#   (push "*magit-process*" popwin:special-display-config)
+#   (push "*magit-edit-log*" popwin:special-display-config)
+#  (push '("*Completions*" :noselect t) popwin:special-display-config)
+#   (push '("*Messages*" :noselect t :height 30) popwin:special-display-config)
+#   (push '("*Apropos*" :noselect t :height 30) popwin:special-display-config)
+#  (popwin-mode t)
+# #+END_SRC
+
+* Reference management with Ebib
+
+#+BEGIN_SRC emacs-lisp
+  (starter-kit-install-if-needed 'ebib)
+  ;; Do not (require 'ebib) since user variables are set at a later point in the
+  ;; Emacs Starter kit init process.
+
+  (with-eval-after-load 'ebib
+    (setq ebib-bibtex-dialect 'biblatex)
+
+    (setq ebib-preload-bib-files ebib-my-bib-file)
+    (setq ebib-file-search-dirs ebib-my-file-search-dirs)
+    (setq ebib-notes-use-single-file ebib-my-annotations-file)
+
+    (add-to-list 'ebib-file-associations (cons "pdf" ebib-my-pdf-viewer))
+
+    (defun ebib-create-org-time-stamp (key db) (format-time-string (org-time-stamp-format (current-time) 'inactive)))
+    (add-to-list 'ebib-notes-template-specifiers '(?Q . ebib-create-org-time-stamp))
+    (defun ebib-create-org-identifier-key-only (key db) key)  ;; pure ebib uid for backlinking in org cite links
+    (add-to-list 'ebib-notes-template-specifiers '(?K . ebib-create-org-identifier-key-only))
+    (setq ebib-notes-template "* TODO [[cite:%K][%T]]\n:PROPERTIES:\n:Custom_id: %K\n:Created:   %Q\n:Effort:    Shift-Right\n:END:\n+ >|<\n")
+
+    ;; add timestamp to bib entries for `ebib-list-recent'
+    (setq ebib-use-timestamp t)
+
+    ;; use cite: when pushing from ebib to org via `ebib-insert-citation'
+    (setq ebib-citation-commands (assq-delete-all 'org-mode ebib-citation-commands))
+    (add-to-list 'ebib-citation-commands '(org-mode (("cite" "[[cite:%K][%D]]")))))
+#+END_SRC

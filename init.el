@@ -4,6 +4,26 @@
 ;;
 ;; This is the first thing to get loaded.
 ;;
+;; http://orgmode.org/worg/org-contrib/babel/intro.html
+
+(define-key input-decode-map (kbd "M-?") (kbd "C-h"))
+(define-key input-decode-map (kbd "C-k") (kbd "<up>"))
+(define-key input-decode-map (kbd "C-j") (kbd "<down>"))
+(define-key input-decode-map (kbd "C-l") (kbd "C-<left>"))
+(define-key input-decode-map (kbd "C-ö") (kbd "C-<right>"))
+
+(define-key input-decode-map (kbd "C-M-j") (kbd "<next>"))
+(define-key input-decode-map (kbd "C-M-k") (kbd "<prior>"))
+(define-key input-decode-map (kbd "C-M-ö") (kbd "<end>"))
+(define-key input-decode-map (kbd "C-M-l") (kbd "<home>"))
+(define-key input-decode-map (kbd "C-h") (kbd "<backspace>"))
+;; (define-key input-decode-map (kbd "C-M-h") (kbd "C-<backspace>"))
+;; (define-key my-keys-minor-mode-map (kbd "C-M-h") 'backward-kill-word)
+;; (define-key my-keys-minor-mode-map (kbd "M-ö") 'backward-kill-word)
+;; (define-key input-decode-map (kbd "C-m") (kbd "<return>"))
+
+(with-eval-after-load 'org
+  (org-babel-load-file (expand-file-name "starter-kit-org.org" starter-kit-dir)))
 
 ;; load Org-mode from source when the ORG_HOME environment variable is set
 (when (getenv "ORG_HOME")

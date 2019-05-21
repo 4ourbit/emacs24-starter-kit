@@ -3,6 +3,16 @@
 
 This is part of the [[file:starter-kit.org][Emacs Starter Kit]].
 
+This file is loaded in init.el even before all the rest in Emacs Starter
+Kit:
+
+(with-eval-after-load 'org
+  (org-babel-load-file (expand-file-name "starter-kit-org.org" starter-kit-dir)))
+
+This is to setup org-mode without restarting it later on. Therefore Emacs
+Starter Kits' core functions are not available yet and can only be used in
+hooks.
+
 * Starter Kit Org
 Configuration for the eminently useful [[http://orgmode.org/][Org Mode]].
 
@@ -13,23 +23,51 @@ GTD system or tool for reproducible research and literate programming.
 
 For more information on org-mode check out [[http://orgmode.org/worg/][worg]], a large Org-mode wiki
 which is also *implemented using* Org-mode and [[http://git-scm.com/][git]].
+** Set up hooks for clock persistence
+#+BEGIN_SRC emacs-lisp
+  (setq org-clock-persist 'history)  ;; running clock is not persisted
+  (setq org-clock-persist-file "~/.emacs.d/.org.clock")
 
+  (org-clock-persistence-insinuate)
+#+END_SRC
+
+Assume Emacs is running when work is clockable. Clock out before killing Emacs.
+#+BEGIN_SRC emacs-lisp
+  (defun my/org-query-clock-out ()
+    "Ask the user before clocking out."
+    (if (and (featurep 'org-clock)
+             (funcall 'org-clocking-p)
+             (yes-or-no-p "You are currently clocking time, clock out? "))
+        (org-clock-out)
+      t)) ;; only fails on keyboard quit or error
+  (add-hook 'kill-emacs-query-functions 'my/org-query-clock-out)
+#+END_SRC
 ** Org-Mode Hook -- Keybindings
    :PROPERTIES:
    :CUSTOM_ID: keybindings
    :END:
 #+begin_src emacs-lisp
-  (add-hook 'org-mode-hook
-            (lambda ()
-              (local-set-key "\M-\C-n" 'outline-next-visible-heading)
-              (local-set-key "\M-\C-p" 'outline-previous-visible-heading)
-              (local-set-key "\M-\C-u" 'outline-up-heading)
-              ;; table
-              (local-set-key "\M-\C-w" 'org-table-copy-region)
-              (local-set-key "\M-\C-y" 'org-table-paste-rectangle)
-              (local-set-key "\M-\C-l" 'org-table-sort-lines)
-              ;; display images
-              (local-set-key "\M-I" 'org-toggle-iimage-in-org)))
+  (defun my/org-mode-keys ()
+    "my keys for `org-mode'."
+    ;; use same keys with modifiers as speed keys
+    (local-set-key "\C-n" 'outline-next-visible-heading)
+    (local-set-key "\C-p" 'outline-previous-visible-heading)
+    (local-set-key "\C-f" 'outline-forward-same-level)
+    (local-set-key "\C-b" 'outline-backward-same-level)
+
+    (local-set-key "\M-." 'org-open-at-point)
+    ;; default is "C-c C-c":
+    (local-set-key "\M-\C-x" 'org-babel-execute-maybe))
+
+    ;; (local-set-key "\M-\C-u" 'outline-up-heading)
+    ;; ;; table
+    ;; (local-set-key "\M-\C-w" 'org-table-copy-region)
+    ;; (local-set-key "\M-\C-y" 'org-table-paste-rectangle)
+    ;; (local-set-key "\M-\C-l" 'org-table-sort-lines)
+    ;; ;; display images
+    ;; (local-set-key "\M-I" 'org-toggle-iimage-in-org)
+
+  (add-hook 'org-mode-hook #'my/org-mode-keys)
 #+end_src
 
 ** Speed keys
@@ -47,7 +85,7 @@ sequence =C-c C-v h= (bound to `=org-babel-describe-bindings=') will
 display a list of the code blocks commands and their related keys.
 
 #+begin_src emacs-lisp
-  (setq org-use-speed-commands t)
+  ;; (setq org-use-speed-commands t)
 #+end_src
 
 ** Code blocks
@@ -98,3 +136,246 @@ directory) file for information on the functions, and see
 
 Code blocks can be loaded into the library of babel from any Org-mode
 file using the `org-babel-lob-ingest' function.
+
+** Calendar customizations
+#+begin_src emacs-lisp
+  ;; (append holiday-general-holidays
+  ;;       '((holiday-fixed 1 1 "Neujahr")
+  ;;         (holiday-fixed 5 1 "1. Mai")
+  ;;         (holiday-fixed 10 3 "Tag der Deutschen Einheit")))
+  ;;
+  (setq calendar-date-display-form '((if dayname (concat dayname ", ")) day ". " monthname " " year))
+  (setq calendar-week-start-day 1)
+
+  (setq org-icalendar-combined-name "OrgMode Agenda")
+  (setq org-icalendar-combined-description "OrgMode Agenda")
+  (setq org-icalendar-use-scheduled '(event-if-not-todo event-if-todo))
+  (setq org-icalendar-alarm-time 5)
+  (setq org-icalendar-date-time-format ":%Y%m%dT%H%M%SZ")
+  (setq org-icalendar-include-body 0)
+  (defun strip-org-todo-from-ical ()
+    (interactive)
+    (save-excursion
+        (goto-char (point-min))
+        (while (re-search-forward "S: TODO " nil t)
+          (replace-match ""))))
+  (defun set-file-coding-for-ical ()
+    (interactive)
+    (set-buffer-file-coding-system 'utf-8)
+    (save-buffer))
+  (add-hook 'org-before-save-iCalendar-file-hook 'strip-org-todo-from-ical)
+  (add-hook 'org-after-save-iCalendar-file-hook 'set-file-coding-for-ical)
+#+end_src
+
+** Formatting CLOCKSUM lines
+Format used when creating CLOCKSUM lines and when generating a time duration
+(avoid showing days)
+#+BEGIN_SRC emacs-lisp
+  (setq org-time-clocksum-format
+    '(:hours "%d" :require-hours t :minutes ":%02d" :require-minutes t))
+#+END_SRC
+
+** Spell checking
+#+BEGIN_SRC emacs-lisp
+;; (add-hook 'org-mode-hook 'turn-on-flyspell)
+#+END_SRC
+** TODO Programmable completions and hippie completions
+#+BEGIN_SRC emacs-lisp
+  (defun my/add-hippie-expand-to-capf ()  ;; for `completion-at-point'
+    (defun hippie-expand-at-point ()
+      (hippie-expand 1))
+    (add-to-list 'completion-at-point-functions 'hippie-expand-at-point t))
+  (add-hook 'org-mode-hook #'my/add-hippie-expand-to-capf)
+
+  (defun my/add-pcomplete-to-capf ()  ;; for `completion-at-point'
+    (add-to-list 'completion-at-point-functions 'pcomplete-completions-at-point t))
+  (add-hook 'org-mode-hook #'my/add-pcomplete-to-capf)
+#+END_SRC
+
+** Sublimity mini-map
+#+BEGIN_SRC emacs-lisp
+  (defun my/show-sublimity-map ()
+    (starter-kit-install-if-needed 'sublimity)
+    (require 'sublimity)
+    (require 'sublimity-map)
+    (setq sublimity-map-max-fraction 0.5
+          sublimity-map-size 38))
+  (add-hook 'org-mode-hook #'my/show-sublimity-map)
+#+END_SRC
+
+** Capture templates
+#+BEGIN_SRC emacs-lisp
+  (setq org-capture-templates '(
+    ("t" "Todo" entry (file+headline org-my-capture-file "Tasks")
+               "* TODO %?\n:PROPERTIES:\n:Created: %u\n:Effort:   Shift-Right\n:END:\n   %a")  ; template
+    ("j" "Journal" entry (file+datetree org-my-capture-file)
+               "* %?\nEntered on %u\n  %i\n  %a")))
+#+END_SRC
+
+** Latex
+#+BEGIN_SRC emacs-lisp
+  (setq org-latex-create-formula-image-program 'dvipng)
+  (setq org-latex-preview-ltxpng-directory "~/.emacs.d/ltxpng/")
+#+END_SRC
+
+** Citation completion with reftex
+#+BEGIN_SRC emacs-lisp
+  ;;; org-ref-reftex.el --- org-ref completion setup with reftex  -*- lexical-binding: t; -*-
+
+  ;; Copyright (C) 2016  John Kitchin
+
+  ;; Author: John Kitchin <jkitchin@andrew.cmu.edu>
+  ;; Keywords:
+
+  ;; This program is free software; you can redistribute it and/or modify
+  ;; it under the terms of the GNU General Public License as published by
+  ;; the Free Software Foundation, either version 3 of the License, or
+  ;; (at your option) any later version.
+
+  ;; This program is distributed in the hope that it will be useful,
+  ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ;; GNU General Public License for more details.
+
+  ;; You should have received a copy of the GNU General Public License
+  ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+  ;;; Commentary: This is a bare-bones completion engine using only org-mode and
+  ;;; vanilla Emacs functions. It is not being further developed.
+
+  ;; use same format when using reftex mode in org (org-reftex-citation)
+  (defun org-mode-reftex-setup ()
+    "Setup reftex for `org-mode'."
+    (and (buffer-file-name)
+         (file-exists-p (buffer-file-name))
+         (global-auto-revert-mode t))
+    (make-local-variable 'reftex-cite-format)
+    (setq reftex-cite-format 'org))
+
+  ;;  (add-hook 'org-mode-hook 'org-mode-reftex-setup)
+
+  (eval-after-load 'reftex-vars
+    '(progn
+       (add-to-list 'reftex-cite-format-builtin
+                    '(org "Org-mode citation" ((?m . "[[cite:%l][]]")     ; default
+                                               (?d . ",%l")            ; for appending
+                                               (?a . "autocite:%l")
+                                               (?t . "citet:%l")
+                                               (?T . "citet*:%l")
+                                               (?p . "citep:%l")
+                                               (?P . "citep*:%l")
+                                               (?h . "citeauthor:%l")
+                                               (?H . "citeauthor*:%l")
+                                               (?y . "citeyear:%l")
+                                               (?x . "citetext:%l")
+                                               (?n . "nocite:%l"))))))
+
+  (defun my/org-reftex-citation (alternative-cite)
+    "Insert a default citation link using reftex.
+    If you are on a link, it appends to the end of the link,
+    otherwise, a new link is inserted.  Use a prefix
+    arg (ALTERNATIVE-CITE) to get a menu of citation types."
+    (interactive "P")
+    (let ((reftex-docstruct-symbol 'org--rds)
+          org--rds bib)
+      (org-with-wide-buffer
+       (let ((case-fold-search t)
+             (re "^[ \t]*#\\+BIBLIOGRAPHY:[ \t]+\\([^ \t\n]+\\)"))
+         (if (not (save-excursion
+                    (or (re-search-forward re nil t)
+                        (re-search-backward re nil t))))
+             (user-error "No bibliography defined in file")
+           (setq bib (concat (match-string 1) ".bib")
+                 org--rds (list (list 'bib bib))))))
+
+    (let* ((object (org-element-context))
+           (org-ref-cite-types '("cite" "nocite"))
+           (org-ref-default-citation-link "cite")
+           (link-string-end (org-element-property :end object)))
+
+      (if (not alternative-cite)
+
+          (cond
+           ;; case where we are in a link
+           ((and (equal (org-element-type object) 'link)
+                 (-contains? org-ref-cite-types
+                             (org-element-property :type object)))
+            (goto-char link-string-end)
+            ;; sometimes there are spaces at the end of the link
+            ;; this code moves point pack until no spaces are there
+            (skip-chars-backward " ")
+            (insert (concat "," (mapconcat
+                                 'identity
+                                 (reftex-citation t ?a) ","))))
+
+           ;; We are next to a link, and we want to append
+           ((save-excursion
+              (backward-char)
+              (and (equal (org-element-type (org-element-context)) 'link)
+                   (-contains? org-ref-cite-types
+                               (org-element-property
+                                :type (org-element-context)))))
+            (skip-chars-backward " ")
+            (insert (concat "," (mapconcat
+                                 'identity
+                                 (reftex-citation t ?a) ","))))
+
+           ;; insert fresh link
+           (t
+            (insert
+             (concat org-ref-default-citation-link
+                     ":"
+                     (mapconcat 'identity (reftex-citation t) ",")))))
+
+        ;; you pressed a C-u so we run this code
+        (reftex-citation)))))
+#+END_SRC
+
+** Disable org-bibtex
+#+BEGIN_SRC emacs-lisp
+  ;; disable org-bibtex bibfile management, since we are using ebib
+  (setq org-modules (remove 'org-bibtex org-modules))
+#+END_SRC
+** Cite links
+#+BEGIN_SRC emacs-lisp
+    ;; Add universal cite links to org-link-parameters
+    (defun my/export-cite (path desc format)
+      "Export [[cite:cohen93]] as \cite{cohen93} in LaTeX."
+      (if (eq format 'latex)
+          (if (or (not desc) (equal 0 (search "cite:" desc)))
+              (format "\\cite{%s}" path)
+            (format "\\cite[%s]{%s}" desc path))))
+    (require 'org-ebib)
+    ;; does define (org-link-set-parameters "ebib" :follow #'org-ebib-open :store #'org-ebib-store-link)
+    ;; TODO maybe remove!?
+  (org-link-set-parameters "cite"
+     :follow #'org-ebib-open
+     :store #'org-ebib-store-link
+     :export 'my/export-cite
+     :display 'full)
+
+    ;; cite complete and face attributes require ebib to be loaded
+  (with-eval-after-load 'ebib
+    (org-link-set-parameters "cite"
+       :complete (lambda () (ebib--execute-when
+         ((database)
+           (let* ((databases (ebib--get-local-databases))
+                  (collection (ebib--create-collection-from-db databases)))
+             (when collection
+               (let ((key (completing-read "Key to insert: " collection nil t nil 'ebib--key-history)))
+                 (format "[[cite:%s][]]" key)))))
+        ((default)
+         (error "[Ebib] No database loaded"))))
+       :face (lambda (path) (ebib--execute-when
+            ((database)
+             (let* ((databases (ebib--get-local-databases))
+                    (collection (ebib--create-collection-from-db databases)))
+               (if (member path collection)
+                           '(:inherit org-link :foreground "sea green")
+                           '(:inherit org-link :foreground "red"))))
+           ((default) 'org-link))))
+    (dolist (buf (buffer-list (current-buffer)))
+      (with-current-buffer buf
+        (if (eq major-mode 'org-mode)
+          (font-lock-fontify-buffer)))))
+#+END_SRC
