@@ -147,14 +147,14 @@ general starter-kit updates without conflict.
      that look useful into your personal config, or simply by loading
      the entire file directly with the following.
      #+begin_src emacs-lisp
-       (starter-kit-load "python")
+       ; (starter-kit-load "python")
      #+end_src
 
      Alternately you can load only one particular subsection of an
      included file, for example to load just the "pretty-summary"
      section of =starter-kit-gnus.org= run the following.
      #+begin_src emacs-lisp
-       (starter-kit-load "gnus" "pretty-summary")
+       ; (starter-kit-load "gnus" "pretty-summary")
      #+end_src
      
      Finally you can load just those subsections of a file which have
@@ -163,7 +163,7 @@ general starter-kit updates without conflict.
      the following to your personal initialization.  Note: header id's
      take priority over tags.
      #+begin_src emacs-lisp
-       (starter-kit-load "gnus" "visual")
+       ; (starter-kit-load "gnus" "visual")
      #+end_src
 
 - Installing more elisp libraries :: The easiest way to install new
