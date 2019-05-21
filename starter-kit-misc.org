@@ -170,3 +170,13 @@ let them live in the =backup/= directory inside of the starter kit.
      (set-face-foreground 'diff-removed "red3")))
 #+end_src
 
+
+* Starter Kit Misc Additions
+Use ':tangle no' to disable specific source blocks
+
+** Toggle  Useful Emacs Modes
+*** Show battery info in mode-line
+#+BEGIN_SRC emacs-lisp
+  (setq battery-mode-line-format "%b%p%% %t")
+  (display-battery-mode)
+#+END_SRC
