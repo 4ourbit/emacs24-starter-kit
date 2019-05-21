@@ -175,10 +175,6 @@ Format used when creating CLOCKSUM lines and when generating a time duration
     '(:hours "%d" :require-hours t :minutes ":%02d" :require-minutes t))
 #+END_SRC
 
-** Spell checking
-#+BEGIN_SRC emacs-lisp
-;; (add-hook 'org-mode-hook 'turn-on-flyspell)
-#+END_SRC
 ** TODO Programmable completions and hippie completions
 #+BEGIN_SRC emacs-lisp
   (defun my/add-hippie-expand-to-capf ()  ;; for `completion-at-point'

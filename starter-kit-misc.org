@@ -244,12 +244,10 @@ let them live in the =backup/= directory inside of the starter kit.
 #+end_src
 
 ** Cosmetics
-
 #+begin_src emacs-lisp
-(eval-after-load 'diff-mode
-  '(progn
-     (set-face-foreground 'diff-added "green4")
-     (set-face-foreground 'diff-removed "red3")))
+  (with-eval-after-load 'diff-mode
+    (set-face-foreground 'diff-added "green4")
+    (set-face-foreground 'diff-removed "red3"))
 #+end_src
 
 
@@ -261,64 +259,57 @@ Use ':tangle no' to disable specific source blocks
   (server-start)
 #+END_SRC
 
-** My-Keys key bindings
+** My key bindings
 #+BEGIN_SRC emacs-lisp
-(defvar my-keys-minor-mode-map (make-keymap) "keys-mode keymap.")
-  (define-minor-mode my-keys-minor-mode
-    "A minor mode so that my key settings override any major modes." t " Keys"
-    'my-keys-minor-mode-map)
-  (defadvice load (after give-my-keybindings-priority)
-    "Try to ensure that my keybindings always have priority."
-    (if (not (eq (car (car minor-mode-map-alist)) 'my-keys-minor-mode))
-        (let ((mykeys (assq 'my-keys-minor-mode minor-mode-map-alist)))
-          (assq-delete-all 'my-keys-minor-mode minor-mode-map-alist)
-          (add-to-list 'minor-mode-map-alist mykeys))))
-(ad-activate 'load)
-(my-keys-minor-mode t)
+  (defvar my/keys-minor-mode-map (make-keymap) "my/keys-mode keymap.")
+    (define-minor-mode my/keys-minor-mode
+      "A minor mode so that my key settings override any major modes." t " Keys"
+      'my/keys-minor-mode-map)
+    (defadvice load (after give-my-keybindings-priority)
+      "Try to ensure that my keybindings always have priority."
+      (if (not (eq (car (car minor-mode-map-alist)) 'my/keys-minor-mode))
+          (let ((mykeys (assq 'my/keys-minor-mode minor-mode-map-alist)))
+            (assq-delete-all 'my/keys-minor-mode minor-mode-map-alist)
+            (add-to-list 'minor-mode-map-alist mykeys))))
+  (ad-activate 'load)
+  (my/keys-minor-mode t)
 #+END_SRC
-
-#+BEGIN_SRC emacs-lisp
-(define-key my-keys-minor-mode-map (kbd "M-j")   'recenter-top-bottom) ; was `comment-indent-new-line'
-#+END_SRC
-
 *** SuperCollider
 #+BEGIN_SRC emacs-lisp
-(define-key my-keys-minor-mode-map (kbd "C-.") 'keyboard-escape-quit)
+  (define-key my/keys-minor-mode-map (kbd "C-.") 'keyboard-escape-quit)
 #+END_SRC
 
 *** Atom Editor
 #+BEGIN_SRC emacs-lisp
-(define-key my-keys-minor-mode-map (kbd "C-M-o") 'switch-to-next-buffer) ; was `split-line'
-(define-key my-keys-minor-mode-map (kbd "M-k")   'kill-this-buffer)
-(define-key my-keys-minor-mode-map (kbd "C-o")   'next-multiframe-window) ; was `open-line'
-(define-key my-keys-minor-mode-map (kbd "C-S-o") 'previous-multiframe-window)
-(define-key my-keys-minor-mode-map (kbd "C-M-d") 'kill-line)
-(define-key my-keys-minor-mode-map (kbd "C-z")   'undo)
-(define-key my-keys-minor-mode-map (kbd "M--")   'completion-at-point) ; "M-/" @ us-en-layout
+  (define-key my/keys-minor-mode-map (kbd "C-M-o") 'switch-to-next-buffer) ; was `split-line'
+  (define-key my/keys-minor-mode-map (kbd "M-k")   'kill-this-buffer)
+  (define-key my/keys-minor-mode-map (kbd "C-o")   'next-multiframe-window) ; was `open-line'
+  (define-key my/keys-minor-mode-map (kbd "C-S-o") 'previous-multiframe-window)
+  (define-key my/keys-minor-mode-map (kbd "C-M-d") 'kill-line)
+  (define-key my/keys-minor-mode-map (kbd "C-z")   'undo)
+  (define-key my/keys-minor-mode-map (kbd "M--")   'completion-at-point) ; "M-/" @ us-en-layout
+#+END_SRC
+*** Recenter-Top-Bottom
+#+BEGIN_SRC emacs-lisp
+  (define-key my/keys-minor-mode-map (kbd "M-j")   'recenter-top-bottom) ; was `comment-indent-new-line'
+#+END_SRC
+
+*** Expand-region
+#+BEGIN_SRC emacs-lisp
+  (starter-kit-install-if-needed 'expand-region)
+  (define-key my/keys-minor-mode-map (kbd "M-SPC")   'er/expand-region)  ;; was `mark-paragraph'
+  (define-key my/keys-minor-mode-map (kbd "M-S-SPC") 'er/contract-region)
+#+END_SRC
+
+*** Multiple-cursors
+#+BEGIN_SRC emacs-lisp
+  (starter-kit-install-if-needed 'multiple-cursors)
+  (define-key my/keys-minor-mode-map (kbd "C-M-SPC") 'mc/mark-next-like-this) ; was `mark-sexp'
 #+END_SRC
 
 ** Toggle  Useful Emacs Modes
 #+BEGIN_SRC emacs-lisp
   (toggle-indicate-empty-lines)
-#+END_SRC
-
-*** Show battery info in mode-line
-#+BEGIN_SRC emacs-lisp
-  (setq battery-mode-line-format "%b%p%% %t")
-  (display-battery-mode)
-#+END_SRC
-
-** undo/redo
-Undo/redo history is a tree but manipulating this tree is a challenge. With
-undo-tree you can press C-x u and view graphical representation of undo/redo
-history. In undo-tree buffer press d to toggle diff and t to toggle timestamps,
-q to quit and C-q to abort. See undo-tree-mode help for details or better
-description of package using describe-package.
-
-#+BEGIN_SRC emacs-lisp
-  (starter-kit-install-if-needed 'undo-tree)
-  (require 'undo-tree)
-  (global-undo-tree-mode)
 #+END_SRC
 
 *** Auto revert buffers when changed externally
@@ -334,25 +325,30 @@ description of package using describe-package.
   (desktop-read)
 #+END_SRC
 
-** Visual indications
-*** Show indentation guide lines
+*** Show battery info in mode-line
+#+BEGIN_SRC emacs-lisp
+  (setq battery-mode-line-format "%b%p%% %t")
+  (display-battery-mode)
+#+END_SRC
+
+** Show indentation guide lines
 #+BEGIN_SRC emacs-lisp :tangle no
   (starter-kit-install-if-needed 'indent-guide)
   (setq indent-guide-recursive t
         indent-guide-char "╎")
   (indent-guide-mode 1)
 #+END_SRC
-** multiple-cursors
-#+BEGIN_SRC emacs-lisp
-  (starter-kit-install-if-needed 'multiple-cursors)
-  (define-key my-keys-minor-mode-map (kbd "C-M-SPC") 'mc/mark-next-like-this) ; was `mark-sexp'
-#+END_SRC
+** Undo/Redo
+Undo/redo history is a tree but manipulating this tree is a challenge. With
+undo-tree you can press C-x u and view graphical representation of undo/redo
+history. In undo-tree buffer press d to toggle diff and t to toggle timestamps,
+q to quit and C-q to abort. See undo-tree-mode help for details or better
+description of package using describe-package.
 
-** expand-region
 #+BEGIN_SRC emacs-lisp
-  (starter-kit-install-if-needed 'expand-region)
-  (define-key my-keys-minor-mode-map (kbd "M-SPC")   'er/expand-region) ; was `mark-paragraph'
-  (define-key my-keys-minor-mode-map (kbd "M-S-SPC") 'er/contract-region)
+  (starter-kit-install-if-needed 'undo-tree)
+  (require 'undo-tree)
+  (global-undo-tree-mode)
 #+END_SRC
 
 ** TODO ledger-mode
