@@ -283,8 +283,10 @@ let them live in the =backup/= directory inside of the starter kit.
 #+BEGIN_SRC emacs-lisp
   (define-key my/keys-minor-mode-map (kbd "C-M-o") 'switch-to-next-buffer) ; was `split-line'
   (define-key my/keys-minor-mode-map (kbd "M-k")   'kill-this-buffer)
-  (define-key my/keys-minor-mode-map (kbd "C-o")   'next-multiframe-window) ; was `open-line'
-  (define-key my/keys-minor-mode-map (kbd "C-S-o") 'previous-multiframe-window)
+  (define-key my/keys-minor-mode-map (kbd "C-o")   'other-window) ; was `open-line'
+  (define-key my/keys-minor-mode-map (kbd "C-S-o") (lambda () (interactive)
+						     (let ((current-prefix-arg '(-1)))
+						       (call-interactively 'other-window))))
   (define-key my/keys-minor-mode-map (kbd "C-M-d") 'kill-line)
   (define-key my/keys-minor-mode-map (kbd "C-z")   'undo)
   (define-key my/keys-minor-mode-map (kbd "M--")   'completion-at-point) ; "M-/" @ us-en-layout
