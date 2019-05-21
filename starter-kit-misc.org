@@ -40,7 +40,7 @@ evaluated a theme is activated using the =load-theme= function.
   (when window-system
     (setq frame-title-format '(buffer-file-name "%f" ("%b")))
     (setq blink-cursor-interval 0.5)
-    (set-default 'cursor-type '(bar . 2))
+    (set-default 'cursor-type 'box)
     (blink-cursor-mode 1)
     (when (require 'mwheel nil 'no-error) (mouse-wheel-mode t)))
   
