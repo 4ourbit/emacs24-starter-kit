@@ -1,0 +1,401 @@
+#+TITLE: Starter Kit Hydras
+#+OPTIONS: toc:nil num:nil ^:nil
+
+This is part of the [[file:starter-kit.org][Emacs Starter Kit]].
+
+Use ':tangle no' to disable specific source blocks
+
+* Starter Kit Hydras
+
+This package can be used to tie related commands into a family of
+short bindings with a common prefix - a Hydra.
+
+https://github.com/abo-abo/hydra
+
+** Check Dependencies
+
+Determine whether required packages are installed. If not, use ELPA to
+install them.
+#+begin_src emacs-lisp
+  (starter-kit-install-if-needed 'hydra)
+#+end_src
+
+** Hydra Emacs recipes
+Taken from https://github.com/abo-abo/hydra/wiki/Emacs
+
+*** Zoom
+
+Here's an example Hydra, bound in the global map (you can use any
+keymap in place of `global-map'):
+
+#+begin_src emacs-lisp
+  (define-globalized-minor-mode
+    global-text-scale-mode
+    text-scale-mode
+    (lambda () (text-scale-mode 1)))
+  (defun global-text-scale-adjust (inc) (interactive)
+	 (text-scale-set 1)
+	 (kill-local-variable 'text-scale-mode-amount)
+	 (setq-default text-scale-mode-amount (+ text-scale-mode-amount inc))
+	 (global-text-scale-mode 1))
+  (defhydra hydra-zoom (global-map "C-x")
+    "zoom"
+    ("C-0" (global-text-scale-mode -1) "reset")
+    ("C-+" (global-text-scale-adjust 1) "in")
+    ("C--" (global-text-scale-adjust -1) "out"))
+#+end_src
+
+It allows to start a command chain either like this:
+"<C-+> ++--++-", or "<f2> lgllg".
+
+*** Toggle Modes
+Here's another approach, when you just want a "callable keymap":
+
+#+begin_src emacs-lisp
+  (defhydra hydra-toggle ()
+    "toggle"
+    ("a" abbrev-mode "abbrev")
+    ("d" toggle-debug-on-error "debug")
+    ("f" auto-fill-mode "fill")
+    ("g" magit-blame "blame")
+    ("l" linum-mode "linum")
+    ("t" toggle-truncate-lines "truncate" :color blue)
+    ("w" whitespace-mode "whitespace")
+    ("z" hydra-zoom/body "zoom")
+    ("q" nil "cancel"))
+#+end_src
+
+This binds nothing so far, but if you follow up with:
+
+#+begin_src emacs-lisp
+  (global-set-key (kbd "M-m") 'hydra-toggle/body)
+  (define-key my/keys-minor-mode-map (kbd "M-m") 'hydra-toggle/body) ; was `back-to-indentation'
+#+end_src
+
+you will have bound "M-m a", "M-m d" etc.
+
+Knowing that `defhydra' defines e.g. `hydra-toggle/body' command,
+you can nest Hydras if you wish, with `hydra-toggle/body' possibly
+becoming a blue head of another Hydra.
+
+If you want to learn all intricacies of using `defhydra' without
+having to figure it all out from this source code, check out the
+wiki: https://github.com/abo-abo/hydra/wiki. There's a wealth of
+information there. Everyone is welcome to bring the existing pages
+up to date and add new ones.
+
+Additionally, the file hydra-examples.el serves to demo most of the
+functionality.
+
+*** Yank
+
+Repeatable yank(-pop) command, with an option to switch to a list view using `helm` or
+`browse-kill-ring`.
+
+#+begin_src emacs-lisp
+  (starter-kit-install-if-needed 'browse-kill-ring)
+  ;; (browse-kill-ring-default-keybindings)
+  (defhydra hydra-yank-pop ()
+    "yank"
+    ("C-y" yank nil)
+    ("M-y" yank-pop nil)
+    ("y" (yank-pop 1) "next")
+    ("Y" (yank-pop -1) "prev")
+    ("l" browse-kill-ring "list" :color blue))   ; or helm-show-kill-ring
+  (global-set-key (kbd "M-y") #'hydra-yank-pop/yank-pop)
+  (global-set-key (kbd "C-y") #'hydra-yank-pop/yank)
+#+end_src
+
+*** Movement
+
+For many Emacs users, basic movement commands are [the most frequently used](http://ergoemacs.org/emacs/command-frequency.html)! Set up a movement group that means we don't need to hold the control key.
+
+#+begin_src emacs-lisp
+  (defhydra hydra-move
+       (:body-pre (next-line))
+       "move"
+       ("j" next-line)
+       ("k" previous-line)
+       ("l" beginning-of-line)
+       ("ö" move-end-of-line)
+       ("SPC" scroll-up-command)
+       ;; Converting M-v to V here by analogy.
+       ("S-SPC" scroll-down-command)
+       ("M-j" recenter-top-bottom))
+  (global-set-key (kbd "M-j") #'hydra-move/recenter-top-bottom)
+#+end_src
+
+*** Page Navigation
+
+Repeatable page navigation commands, handy for large files with page
+delimiters.
+
+#+begin_src emacs-lisp :tangle no
+(defhydra hydra-page (ctl-x-map "" :pre (widen))
+  "page"
+  ("]" forward-page "next")
+  ("[" backward-page "prev")
+  ("n" narrow-to-page "narrow" :bind nil :exit t))
+#+end_src
+
+*** Goto Line
+
+Enhanced goto-line command:
+ * Temporarily show line-numbers while the hydra is active
+ * Use `m` to set the mark and `g` to jump to another line, i.e. to mark a range of lines by number.
+ * Note that prefix arguments work, for example:
+     *  `M-g 50 RET`  -- go to line 50
+     *  `5 5 g` -- jump ahead to line 55
+     *  `m` -- set the mark
+     *  `6 5 g` -- extend the marked region to line 65
+     *  `M-w` -- save the region to the kill-ring and exit the hydra
+
+#+begin_src emacs-lisp
+(defhydra hydra-goto-line (goto-map ""
+                           :pre (linum-mode 1)
+                           :post (linum-mode -1))
+  "goto-line"
+  ("g" goto-line "go")
+  ("m" set-mark-command "mark" :bind nil)
+  ("q" nil "quit"))
+#+end_src
+
+*** Move Text
+
+Simple hydra to move current line (or region, if there is one) up and down. Requires
+[`move-text.el`](http://www.emacswiki.org/emacs/move-text.el), which can be installed from MELPA.
+
+#+begin_src emacs-lisp :tangle no
+(defhydra hydra-move-text ()
+  "Move text"
+  ("u" move-text-up "up")
+  ("d" move-text-down "down"))
+#+end_src
+
+*** Find file with <kbd>xf</kbd>
+(Look ma, no modifiers!)
+
+This example was proposed [here](http://emacs.stackexchange.com/a/9898/780) on Stack Exchange. It
+binds the key sequence <kbd>xf</kbd> to `ido-find-file` while still allowing you to type "x"
+normally for any other purpose. The hydra times out after half a second so if you really need to
+type "xf" you can hit the <kbd>x</kbd>, wait a moment, and then proceed.
+
+#+begin_src emacs-lisp :tangle no
+  (defun x-hydra-pre ()
+    (insert "x")
+    (let ((timer (timer-create)))
+      (timer-set-time timer (timer-relative-time (current-time) 0.5))
+      (timer-set-function timer 'hydra-keyboard-quit)
+      (timer-activate timer)))
+
+  (defhydra x-hydra (:body-pre x-hydra-pre
+		     :color blue
+		     :hint nil)
+    ("b" (progn (zap-to-char -1 ?x) (ido-switch-buffer)))
+    ("d" (progn (zap-to-char -1 ?x) (ido-dired)))
+    ("f" (progn (zap-to-char -1 ?x) (ido-find-file)))
+    ("g" (progn (zap-to-char -1 ?x) (magit-status))))
+
+  (global-set-key "x" #'x-hydra/body)
+#+end_src
+
+*** Outline minor mode
+
+Outline minor mode keybingings are often repeated and hard to remember. This hydra solve it with the same keybindings. outline-minor-mode must be enabled.
+
+#+begin_src emacs-lisp :tangle no
+(defhydra hydra-outline (:color pink :hint nil)
+  "
+^Hide^             ^Show^           ^Move
+^^^^^^------------------------------------------------------
+_q_: sublevels     _a_: all         _u_: up
+_t_: body          _e_: entry       _n_: next visible
+_o_: other         _i_: children    _p_: previous visible
+_c_: entry         _k_: branches    _f_: forward same level
+_l_: leaves        _s_: subtree     _b_: backward same level
+_d_: subtree
+
+"
+  ;; Hide
+  ("q" hide-sublevels)    ; Hide everything but the top-level headings
+  ("t" hide-body)         ; Hide everything but headings (all body lines)
+  ("o" hide-other)        ; Hide other branches
+  ("c" hide-entry)        ; Hide this entry's body
+  ("l" hide-leaves)       ; Hide body lines in this entry and sub-entries
+  ("d" hide-subtree)      ; Hide everything in this entry and sub-entries
+  ;; Show
+  ("a" show-all)          ; Show (expand) everything
+  ("e" show-entry)        ; Show this heading's body
+  ("i" show-children)     ; Show this heading's immediate child sub-headings
+  ("k" show-branches)     ; Show all sub-headings under this heading
+  ("s" show-subtree)      ; Show (expand) everything in this heading & below
+  ;; Move
+  ("u" outline-up-heading)                ; Up
+  ("n" outline-next-visible-heading)      ; Next
+  ("p" outline-previous-visible-heading)  ; Previous
+  ("f" outline-forward-same-level)        ; Forward - same level
+  ("b" outline-backward-same-level)       ; Backward - same level
+  ("z" nil "leave"))
+
+(global-set-key (kbd "C-c #") 'hydra-outline/body) ; by example
+#+end_src
+
+*** Occur
+This Hydra coupled by the saner occur defined [here](http://oremacs.com/2015/01/26/occur-dwim/) as well as some other customization allows:
+- searching for the regexp
+- navigating matches without leaving the occur buffer
+- navigating using simple key strokes
+- hiding the occur buffer
+- re-attaching to the occur buffer in a split window
+
+Keystrokes having meaning to occur are preserved and should work as per defaults. For example <kbd>e</kbd> should put you in #+end_srcoccur-edit-mode#+end_src, <kbd>q</kbd> should quit the occur mode, etc.
+
+Complete code is below:
+
+#+begin_src lisp :tangle no
+  (defun occur-dwim ()
+    "Call `occur' with a sane default, chosen as the thing under point or selected region"
+    (interactive)
+    (push (if (region-active-p)
+	      (buffer-substring-no-properties
+	       (region-beginning)
+	       (region-end))
+	    (let ((sym (thing-at-point 'symbol)))
+	      (when (stringp sym)
+		(regexp-quote sym))))
+	  regexp-history)
+    (call-interactively 'occur))
+
+  ;; Keeps focus on *Occur* window, even when when target is visited via RETURN key.
+  ;; See hydra-occur-dwim for more options.
+  (defadvice occur-mode-goto-occurrence (after occur-mode-goto-occurrence-advice activate)
+    (other-window 1)
+    (hydra-occur-dwim/body))
+
+  ;; Focus on *Occur* window right away.
+  (add-hook 'occur-hook (lambda () (other-window 1)))
+
+  (defun reattach-occur ()
+    (if (get-buffer "*Occur*")
+      (switch-to-buffer-other-window "*Occur*")
+      (hydra-occur-dwim/body) ))
+
+  ;; Used in conjunction with occur-mode-goto-occurrence-advice this helps keep
+  ;; focus on the *Occur* window and hides upon request in case needed later.
+  (defhydra hydra-occur-dwim ()
+    "Occur mode"
+    ("o" occur-dwim "Start occur-dwim" :color red)
+    ("j" occur-next "Next" :color red)
+    ("k" occur-prev "Prev":color red)
+    ("h" delete-window "Hide" :color blue)
+    ("r" (reattach-occur) "Re-attach" :color red))
+
+  (global-set-key (kbd "C-x o") 'hydra-occur-dwim/body)
+#+end_src
+
+*** Apropos
+
+Emacs ships with many useful "Apropos" commands that [let you search for patterns](https://www.gnu.org/software/emacs/manual/html_node/emacs/Apropos.html). If you want to get into the habit of using these commands more often, the following Hydras might help:
+
+#+begin_src emacs-lisp :tangle no
+  (defhydra hydra-apropos (:color blue)
+    "Apropos"
+    ("a" apropos "apropos")
+    ("c" apropos-command "cmd")
+    ("d" apropos-documentation "doc")
+    ("e" apropos-value "val")
+    ("l" apropos-library "lib")
+    ("o" apropos-user-option "option")
+    ("u" apropos-user-option "option")
+    ("v" apropos-variable "var")
+    ("i" info-apropos "info")
+    ("t" tags-apropos "tags")
+    ("z" hydra-customize-apropos/body "customize"))
+
+  (defhydra hydra-customize-apropos (:color blue)
+    "Apropos (customize)"
+    ("a" customize-apropos "apropos")
+    ("f" customize-apropos-faces "faces")
+    ("g" customize-apropos-groups "groups")
+    ("o" customize-apropos-options "options"))
+#+end_src
+
+*** Transpose
+
+Many transpose options collected so they're easily accessible.
+
+#+begin_src emacs-lisp
+  (global-set-key (kbd "C-t")
+		  (defhydra hydra-transpose (:color red)
+		    "Transpose"
+		    ("C" (transpose-chars -1))
+		    ("c" transpose-chars "characters")
+		    ("W" (transpose-words -1))
+		    ("w" transpose-words "words")
+		    ("L" (transpose-lines -1))
+		    ("l" transpose-lines "lines")
+		    ("S" (transpose-sentences -1))
+		    ("s" transpose-sentences "sentences")
+		    ("P" (transpose-paragraphs -1))
+		    ("p" transpose-paragraphs "paragraphs")
+		    ;; ("o" org-transpose-words "Org mode words")
+		    ;; ("e" org-transpose-elements "Org mode elements")
+		    ;; ("t" org-table-transpose-table-at-point "Org mode table")
+		    ("q" nil "cancel" :color blue)))
+#+end_src
+
+*** Ediff
+
+Ediff is a comprehensive visual interface to Unix diff and patch utilities.  See `(info "(ediff) Introduction")` for more information on Ediff.
+
+This is a simple hydra to access most common features: comparing buffers, files, revisions or regions side by side.
+
+#+begin_src emacs-lisp :tangle no
+  (defhydra hydra-ediff (:color blue :hint nil)
+    "
+^Buffers           Files           VC                     Ediff regions
+----------------------------------------------------------------------
+_b_uffers           _f_iles (_=_)       _r_evisions              _l_inewise
+_B_uffers (3-way)   _F_iles (3-way)                          _w_ordwise
+		    _c_urrent file
+"
+    ("b" ediff-buffers)
+    ("B" ediff-buffers3)
+    ("=" ediff-files)
+    ("f" ediff-files)
+    ("F" ediff-files3)
+    ("c" ediff-current-file)
+    ("r" ediff-revision)
+    ("l" ediff-regions-linewise)
+    ("w" ediff-regions-wordwise)
+    ("q" nil "cancel" :color blue))
+#+end_src
+
+*** Hideshow Mode for code folding
+
+Hideshow is a great minor mode for code folding. Unfortunately, the shortcuts are a bit cumbersome. But fear not, hydra to the rescue!
+
+#+begin_src emacs-lisp :tangle no
+(defhydra hydra-hs (:idle 1.0)
+   "
+Hide^^            ^Show^            ^Toggle^    ^Navigation^
+----------------------------------------------------------------
+_h_ hide all      _s_ show all      _t_oggle    _n_ext line
+_d_ hide block    _a_ show block              _p_revious line
+_l_ hide level
+
+_SPC_ cancel
+"
+   ("s" hs-show-all)
+   ("h" hs-hide-all)
+   ("a" hs-show-block)
+   ("d" hs-hide-block)
+   ("t" hs-toggle-hiding)
+   ("l" hs-hide-level)
+   ("n" forward-line)
+   ("p" (forward-line -1))
+   ("SPC" nil)
+)
+
+(global-set-key (kbd "C-c @") 'hydra-hs/body) # Example binding
+#+end_src

@@ -3,6 +3,8 @@
 
 This is part of the [[file:starter-kit.org][Emacs Starter Kit]].
 
+Use ':tangle no' to disable specific source blocks
+
 * Starter Kit Misc
 Things that don't fit anywhere else.
 
@@ -252,8 +254,6 @@ let them live in the =backup/= directory inside of the starter kit.
 
 
 * Starter Kit Misc Additions
-Use ':tangle no' to disable specific source blocks
-
 ** Server mode
 #+BEGIN_SRC emacs-lisp
   (server-start)
@@ -291,7 +291,8 @@ Use ':tangle no' to disable specific source blocks
 #+END_SRC
 *** Recenter-Top-Bottom
 #+BEGIN_SRC emacs-lisp
-  (define-key my/keys-minor-mode-map (kbd "M-j")   'recenter-top-bottom) ; was `comment-indent-new-line'
+  (define-key my/keys-minor-mode-map (kbd "M-j") 'recenter-top-bottom) ; was `comment-indent-new-line'
+  (define-key my/keys-minor-mode-map (kbd "M-j") #'hydra-move/recenter-top-bottom)
 #+END_SRC
 
 *** Expand-region
@@ -393,12 +394,9 @@ description of package using describe-package.
 
 # (package-initialize) is called automatically when package-enable-at-startup is not nil
 
-** TODO browse-kill-ring, dired+, expand
+** TODO dired+
 # #+BEGIN_SRC emacs-lisp
-#   (starter-kit-install-if-needed 'browse-kill-ring)
-#   (browse-kill-ring-default-keybindings)
 #   (starter-kit-install-if-needed 'dired+)
-#   (starter-kit-install-if-needed 'markdown-mode)
 # #+END_SRC
 #
 ** TODO popwin-mode
