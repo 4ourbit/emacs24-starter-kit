@@ -401,26 +401,44 @@ description of package using describe-package.
 #   (starter-kit-install-if-needed 'dired+)
 # #+END_SRC
 #
-** TODO popwin-mode
-# #+BEGIN_SRC emacs-lisp
-#   ; pop up window for help, browse-kill-ring
-#   (starter-kit-install-if-needed 'popwin)
-#  (push '(Custom-mode) popwin:special-display-config)
-#   (push '(Info-mode) popwin:special-display-config)
-#   (push "*Kill Ring*" popwin:special-display-config)
-#  ;; Use Popup windows for calendar
-#   (push '(Calendar-mode) popwin:special-display-config)
-#  ;; Use Popup windows for magit
-#   (push '(git-commit-mode :stick t) popwin:special-display-config)
-#   (push '("*magit-commit*" :stick t) popwin:special-display-config)
-#   (push "*magit-diff*" popwin:special-display-config)
-#   (push "*magit-process*" popwin:special-display-config)
-#   (push "*magit-edit-log*" popwin:special-display-config)
-#  (push '("*Completions*" :noselect t) popwin:special-display-config)
-#   (push '("*Messages*" :noselect t :height 30) popwin:special-display-config)
-#   (push '("*Apropos*" :noselect t :height 30) popwin:special-display-config)
-#  (popwin-mode t)
-# #+END_SRC
+** popwin-mode
+Use Popup windows for  help, browse-kill-ring
+
+#+BEGIN_SRC emacs-lisp
+  (starter-kit-install-if-needed 'popwin)
+  (require 'popwin)
+  (popwin-mode 1)
+#+END_SRC
+
+Built-in modes
+#+BEGIN_SRC emacs-lisp
+  (push '("*Completions*" :noselect t) popwin:special-display-config)
+  (push '("*Messages*" :noselect t :height 30) popwin:special-display-config)
+  (push '("*Apropos*" :noselect t :height 30) popwin:special-display-config)
+  (push '(Custom-mode) popwin:special-display-config)
+  (push '(Info-mode) popwin:special-display-config)
+  (push '(Calendar-mode) popwin:special-display-config)
+  (push '(help-mode) popwin:special-display-config)
+#+END_SRC
+
+browse-kill-ring
+#+BEGIN_SRC emacs-lisp
+  (push "*Kill Ring*" popwin:special-display-config)
+#+END_SRC
+
+kubernetes.el
+#+BEGIN_SRC emacs-lisp
+  (push '("*kubernetes overview*" :stick t) popwin:special-display-config)
+#+END_SRC
+
+Magit
++ [[https://github.com/magit/transient/issues/34][Conflict between Magit transient commands and popwin]]
+#+BEGIN_SRC emacs-lisp :tangle no
+  (push '("*magit-commit*" :stick t) popwin:special-display-config)
+  (push "*magit-diff*" popwin:special-display-config)
+  (push "*magit-process*" popwin:special-display-config)
+  (push "*magit-edit-log*" popwin:special-display-config)
+#+END_SRC
 
 * Reference management with Ebib
 
