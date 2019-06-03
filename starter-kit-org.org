@@ -219,6 +219,7 @@ Format used when creating CLOCKSUM lines and when generating a time duration
 ** Sublimity mini-map
 #+BEGIN_SRC emacs-lisp
   (defun my/show-sublimity-map ()
+    (interactive)
     (starter-kit-install-if-needed 'sublimity)
     (require 'sublimity)
     (require 'sublimity-map)
