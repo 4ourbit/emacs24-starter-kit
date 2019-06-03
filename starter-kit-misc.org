@@ -341,6 +341,15 @@ let them live in the =backup/= directory inside of the starter kit.
         indent-guide-char "╎")
   (indent-guide-mode 1)
 #+END_SRC
+
+** kubernetes.el
+Determine whether required packages are installed. If not, use ELPA to
+install them. Other dependencies are provided by Emacs 24.
+#+begin_src emacs-lisp
+  (starter-kit-install-if-needed 'kubernetes)
+  (global-set-key (kbd "C-x k") 'kubernetes-overview)
+#+end_src
+
 ** Undo/Redo
 Undo/redo history is a tree but manipulating this tree is a challenge. With
 undo-tree you can press C-x u and view graphical representation of undo/redo
