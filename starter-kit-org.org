@@ -216,18 +216,6 @@ Format used when creating CLOCKSUM lines and when generating a time duration
   (add-hook 'org-mode-hook #'my/add-pcomplete-to-capf)
 #+END_SRC
 
-** Sublimity mini-map
-#+BEGIN_SRC emacs-lisp
-  (defun my/show-sublimity-map ()
-    (interactive)
-    (starter-kit-install-if-needed 'sublimity)
-    (require 'sublimity)
-    (require 'sublimity-map)
-    (setq sublimity-map-max-fraction 0.5
-          sublimity-map-size 38))
-  (add-hook 'org-mode-hook #'my/show-sublimity-map)
-#+END_SRC
-
 ** Capture templates
 #+BEGIN_SRC emacs-lisp
   (setq org-capture-templates '(

@@ -5,7 +5,6 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(column-number-mode t)
- '(custom-enabled-themes (quote (sanityinc-tomorrow-night)))
  '(delete-selection-mode t)
  '(fci-rule-color "#282a2e")
  '(fill-column 80)
@@ -16,7 +15,6 @@
  '(menu-bar-mode nil)
  '(mouse-wheel-mode t)
  '(next-screen-context-lines 0)
- '(safe-local-variable-values (quote ((rainbow-mode . t))))
  '(savehist-file "~/.emacs.d/.savehist")
  '(savehist-mode t)
  '(scroll-bar-mode nil)

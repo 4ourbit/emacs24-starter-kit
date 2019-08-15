@@ -64,9 +64,6 @@ evaluated a theme is activated using the =load-theme= function.
         oddmuse-directory (concat starter-kit-dir "oddmuse")
         xterm-mouse-mode t
         save-place-file (concat starter-kit-dir "places"))
-
-  (starter-kit-install-if-needed 'color-theme-sanityinc-tomorrow)
-  (setq custom-safe-themes t)
 #+end_src
 
 ** Transparently open compressed files
@@ -154,11 +151,6 @@ is possible to do so without breaking things, eg. `execute-extended-command'
       (disable prefix "magit-")))
 #+end_src
 
-*** Use ido for completion-at-point
-#+srcname: starter-kit-ido-at-point
-#+begin_src emacs-lisp
-  (starter-kit-install-if-needed 'ido-at-point)
-#+end_src
 
 ** Other, spell checking, tabs, imenu and a coding hook
 #+begin_src emacs-lisp 
@@ -334,22 +326,6 @@ let them live in the =backup/= directory inside of the starter kit.
   (display-battery-mode)
 #+END_SRC
 
-** Show indentation guide lines
-#+BEGIN_SRC emacs-lisp :tangle no
-  (starter-kit-install-if-needed 'indent-guide)
-  (setq indent-guide-recursive t
-        indent-guide-char "╎")
-  (indent-guide-mode 1)
-#+END_SRC
-
-** kubernetes.el
-Determine whether required packages are installed. If not, use ELPA to
-install them. Other dependencies are provided by Emacs 24.
-#+begin_src emacs-lisp
-  (starter-kit-install-if-needed 'kubernetes)
-  (global-set-key (kbd "C-x k") 'kubernetes-overview)
-#+end_src
-
 ** Undo/Redo
 Undo/redo history is a tree but manipulating this tree is a challenge. With
 undo-tree you can press C-x u and view graphical representation of undo/redo
@@ -363,64 +339,14 @@ description of package using describe-package.
   (global-undo-tree-mode)
 #+END_SRC
 
-** TODO ledger-mode
-# #+BEGIN_SRC emacs-lisp
-# (autoload 'ledger-mode "ledger-mode.el"
-#   "Major mode for editing ledger files" t)
-# (setq ledger-highlight-xact-under-point nil)
-#
-# ;; Install and set up Ledger-under-development
-# (add-to-list 'load-path "C:\\Repositories\\ledger\\lisp")
-# (require 'ledger-mode)
-#
-# ;; Ledger customizations
-# (setq ledger-binary-path "C:\\Repositories\\ledger\\build.vc10\\Release\\ledger.exe")
-#
-# (setq ledger-reports
-#       '(("stats" "ledger -f %(ledger-file) stats")
-#         ("sort" "ledger -f %(ledger-file) --sort d print")
-#         ("bal" "ledger -f %(ledger-file) bal")
-#         ("reg" "ledger -f %(ledger-file) reg")
-#         ("payee" "ledger -f %(ledger-file) reg @%(payee)")
-#         ("account" "ledger -f %(ledger-file) reg %(account)")))
-#
-# (setq ledger-post-account-alignment-column 2)
-# (setq ledger-post-amount-alignment-column 72)
-#
-# (add-hook 'org-mode-hook
-#           (lambda ()
-#             (setenv "PATH"
-#                     (concat
-#                      (getenv "PATH") ";"
-#                      "C:\\Repositories\\ledger\\build.vc10\\Release"))))
-# ;; allow to babel ledger in org mode
-# (require 'ob-ledger)
-# (push "Reconcile" popwin:special-display-config)
-# #+END_SRC
-** TODO emacs-goodies
-# #+BEGIN_SRC emacs-lisp
-# (add-to-list 'load-path "~/.emacs.d/emacs-goodies-el/")
-# (require 'emacs-goodies-el)
-# #+END_SRC
-
-# (package-initialize) is called automatically when package-enable-at-startup is not nil
-
-** TODO dired+
-# #+BEGIN_SRC emacs-lisp
-#   (starter-kit-install-if-needed 'dired+)
-# #+END_SRC
-#
 ** popwin-mode
 Use Popup windows for  help, browse-kill-ring
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (starter-kit-install-if-needed 'popwin)
   (require 'popwin)
   (popwin-mode 1)
-#+END_SRC
-
-Built-in modes
-#+BEGIN_SRC emacs-lisp
+  ;; Built-in modes
   (push '("*Completions*" :noselect t) popwin:special-display-config)
   (push '("*Messages*" :noselect t :height 30) popwin:special-display-config)
   (push '("*Apropos*" :noselect t :height 30) popwin:special-display-config)
@@ -428,21 +354,10 @@ Built-in modes
   (push '(Info-mode) popwin:special-display-config)
   (push '(Calendar-mode) popwin:special-display-config)
   (push '(help-mode) popwin:special-display-config)
-#+END_SRC
-
-browse-kill-ring
-#+BEGIN_SRC emacs-lisp
+  ;; browse-kill-ring
   (push "*Kill Ring*" popwin:special-display-config)
-#+END_SRC
-
-kubernetes.el
-#+BEGIN_SRC emacs-lisp
-  (push '("*kubernetes overview*" :stick t) popwin:special-display-config)
-#+END_SRC
-
-Magit
-+ [[https://github.com/magit/transient/issues/34][Conflict between Magit transient commands and popwin]]
-#+BEGIN_SRC emacs-lisp :tangle no
+  ;; Magit
+  ;; [[https://github.com/magit/transient/issues/34][Conflict between Magit transient commands and popwin]]
   (push '("*magit-commit*" :stick t) popwin:special-display-config)
   (push "*magit-diff*" popwin:special-display-config)
   (push "*magit-process*" popwin:special-display-config)
