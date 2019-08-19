@@ -174,7 +174,7 @@ is possible to do so without breaking things, eg. `execute-extended-command'
 *** ethan-wspace
 Obsoletes `mode-require-final-newlines' or `show-trailing-whitespace'
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (starter-kit-install-if-needed 'ethan-wspace)
   (setq mode-require-final-newline nil)
   (global-ethan-wspace-mode t)
@@ -296,7 +296,7 @@ let them live in the =backup/= directory inside of the starter kit.
 #+END_SRC
 
 *** Multiple-cursors
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (starter-kit-install-if-needed 'multiple-cursors)
   (define-key my/keys-minor-mode-map (kbd "C-M-SPC") 'mc/mark-next-like-this) ; was `mark-sexp'
 #+END_SRC
