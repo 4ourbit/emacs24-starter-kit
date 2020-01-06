@@ -18,11 +18,14 @@
 (define-key input-decode-map (kbd "C-j") (kbd "<down>"))
 (define-key input-decode-map (kbd "C-l") (kbd "C-<left>"))
 (define-key input-decode-map (kbd "C-ö") (kbd "C-<right>"))
+(define-key input-decode-map (kbd "C-;") (kbd "C-<right>"))
 
 (define-key input-decode-map (kbd "C-M-j") (kbd "<next>"))
 (define-key input-decode-map (kbd "C-M-k") (kbd "<prior>"))
-(define-key input-decode-map (kbd "C-M-ö") (kbd "<end>"))
 (define-key input-decode-map (kbd "C-M-l") (kbd "<home>"))
+(define-key input-decode-map (kbd "C-M-ö") (kbd "<end>"))
+(define-key input-decode-map (kbd "C-M-;") (kbd "<end>"))
+
 (define-key input-decode-map (kbd "C-h") (kbd "<backspace>"))
 ;; (define-key input-decode-map (kbd "C-M-h") (kbd "C-<backspace>"))
 ;; (define-key my-keys-minor-mode-map (kbd "C-M-h") 'backward-kill-word)
