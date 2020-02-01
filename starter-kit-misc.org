@@ -61,7 +61,6 @@ evaluated a theme is activated using the =load-theme= function.
         truncate-partial-width-windows nil
         uniquify-buffer-name-style 'forward
         ediff-window-setup-function 'ediff-setup-windows-plain
-        oddmuse-directory (concat starter-kit-dir "oddmuse")
         xterm-mouse-mode t
         save-place-file (concat starter-kit-dir "places"))
 #+end_src

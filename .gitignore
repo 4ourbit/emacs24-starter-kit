@@ -16,7 +16,6 @@ ido.last
 ## directories
 backup/*
 thumbs/*
-oddmuse/*
 eshell/*
 image-dired/*
 elim/*
