@@ -363,33 +363,3 @@ Use Popup windows for  help, browse-kill-ring
   (push "*magit-process*" popwin:special-display-config)
   (push "*magit-edit-log*" popwin:special-display-config)
 #+END_SRC
-
-* Reference management with Ebib
-
-#+BEGIN_SRC emacs-lisp
-  (starter-kit-install-if-needed 'ebib)
-  ;; Do not (require 'ebib) since user variables are set at a later point in the
-  ;; Emacs Starter kit init process.
-
-  (with-eval-after-load 'ebib
-    (setq ebib-bibtex-dialect 'biblatex)
-
-    (setq ebib-preload-bib-files ebib-my-bib-file)
-    (setq ebib-file-search-dirs ebib-my-file-search-dirs)
-    (setq ebib-notes-use-single-file ebib-my-annotations-file)
-
-    (add-to-list 'ebib-file-associations (cons "pdf" my-pdf-viewer))
-
-    (defun ebib-create-org-time-stamp (key db) (format-time-string (org-time-stamp-format (current-time) 'inactive)))
-    (add-to-list 'ebib-notes-template-specifiers '(?Q . ebib-create-org-time-stamp))
-    (defun ebib-create-org-identifier-key-only (key db) key)  ;; pure ebib uid for backlinking in org cite links
-    (add-to-list 'ebib-notes-template-specifiers '(?K . ebib-create-org-identifier-key-only))
-    (setq ebib-notes-template "* TODO [[cite:%K][%T]]\n:PROPERTIES:\n:Custom_id: %K\n:Created:   %Q\n:Effort:    Shift-Right\n:END:\n+ >|<\n")
-
-    ;; add timestamp to bib entries for `ebib-list-recent'
-    (setq ebib-use-timestamp t)
-
-    ;; use cite: when pushing from ebib to org via `ebib-insert-citation'
-    (setq ebib-citation-commands (assq-delete-all 'org-mode ebib-citation-commands))
-    (add-to-list 'ebib-citation-commands '(org-mode (("cite" "[[cite:%K][%D]]")))))
-#+END_SRC
