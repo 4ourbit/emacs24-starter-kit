@@ -281,11 +281,11 @@ interested in the actual code implementing the starter kit.
                 (throw 'file-found path)))))))
   #+end_src
 
-- ELPA archive repositories and two packages to install by default.
+- ELPA archive repository and packages to install by default.
   #+begin_src emacs-lisp
         (setq package-archives
-              '(("gnu"         . "http://elpa.gnu.org/packages/")
-                ("org"         . "http://orgmode.org/elpa/")))
+              '(("gnu"         . "https://elpa.gnu.org/packages/")
+               ))
         (package-initialize)
         
         (defvar starter-kit-packages nil
