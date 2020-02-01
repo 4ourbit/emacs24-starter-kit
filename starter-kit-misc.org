@@ -8,23 +8,6 @@ Use ':tangle no' to disable specific source blocks
 * Starter Kit Misc
 Things that don't fit anywhere else.
 
-** Check Dependencies
-
-Determine whether required packages are installed. If not, use ELPA to
-install them. Other dependencies are provided by Emacs 24.
-#+begin_src emacs-lisp
-  (starter-kit-install-if-needed 'magit)
-  (global-set-key (kbd "C-x g") 'magit-status)
-  (global-set-key (kbd "C-x M-g") 'magit-dispatch-popup)
-#+end_src
-
-#+begin_src emacs-lisp
-  (add-hook 'magit-mode-hook
-        (lambda ()
-          (define-key magit-mode-map (kbd "C-j") 'magit-goto-next-section)
-          (define-key magit-mode-map (kbd "C-k") 'magit-goto-previous-section)))
-#+end_src
-
 ** Color Themes
 Emacs24 has build in support for saving and loading themes.
 
@@ -91,7 +74,6 @@ evaluated a theme is activated using the =load-theme= function.
 ido-mode is like magic pixie dust!
 #+srcname: starter-kit-loves-ido-mode
 #+begin_src emacs-lisp 
-(when (> emacs-major-version 21)
   (ido-mode 'both)
   (setq ido-enable-prefix nil
         ido-enable-flex-matching t
@@ -109,7 +91,7 @@ ido-mode is like magic pixie dust!
   ✓ [Matched]" "
   ✗[Not readable]" "
   ✗[Too big]" "
-  ↵ [Confirm]"))))
+  ↵ [Confirm]")))
 #+end_src
 
 *** Fuzzier ido
@@ -120,34 +102,31 @@ ido-mode is like magic pixie dust!
   (flx-ido-mode t)
 #+end_src
 
-*** Use ido for magit and org
-#+begin_src emacs-lisp
-  (setq magit-completing-read-function 'magit-ido-completing-read
-        org-completion-use-ido t)
-#+end_src
+*** Use ido-completing-read+ (formerly: ido-ubiquitous)
+This package replaces stock emacs completion with ido completion
+wherever it is possible to do so without breaking things (i.e. what
+you were probably hoping for when you set ido-everywhere to t).
 
-*** Use ido everywhere (else)
-[[https://github.com/DarwinAwardWinner/ido-ubiquitous][ido-ubiquitous]] replaces stock emacs completion with ido completion wherever it
-is possible to do so without breaking things, eg. `execute-extended-command'
-(M-x mode)
-#+srcname: starter-kit-ido-ubiquitous
+#+srcname: starter-kit-ido-completing-read+
 #+begin_src emacs-lisp
   (ido-everywhere 1)
-  (starter-kit-install-if-needed 'ido-ubiquitous)
+  (starter-kit-install-if-needed 'ido-completing-read+)
+
+  (require 'ido-completing-read+)
   (ido-ubiquitous-mode 1)
 
-  (setq ido-ubiquitous-command-overrides
-    '(;; Disable, when installing smex
-      (enable exact "execute-extended-command")
-      (enable prefix "wl-")
-      (enable-old prefix "Info-")
-      (enable exact "webjump")
-      ;; https://github.com/DarwinAwardWinner/ido-ubiquitous/issues/28
-      (enable regexp "\\`\\(find\\|load\\|locate\\)-library\\'")
-      ;; https://github.com/DarwinAwardWinner/ido-ubiquitous/issues/37
-      ;; Org and Magit already support ido natively, see above
-      ;; (disable prefix "org-")
-      (disable prefix "magit-")))
+  ;; (setq ido-ubiquitous-command-overrides
+  ;;   '(;; Disable, when installing smex
+  ;;     (enable exact "execute-extended-command")
+  ;;     (enable prefix "wl-")
+  ;;     (enable-old prefix "Info-")
+  ;;     (enable exact "webjump")
+  ;;     ;; https://github.com/DarwinAwardWinner/ido-ubiquitous/issues/28
+  ;;     (enable regexp "\\`\\(find\\|load\\|locate\\)-library\\'")
+  ;;     ;; https://github.com/DarwinAwardWinner/ido-ubiquitous/issues/37
+  ;;     ;; Org and Magit already support ido natively, see above
+  ;;     ;; (disable prefix "org-")
+  ;;     (disable prefix "magit-")))
 #+end_src
 
 

@@ -1,0 +1,43 @@
+#+TITLE: Starter Kit Magit
+#+OPTIONS: toc:nil num:nil ^:nil
+
+This is part of the [[file:starter-kit.org][Emacs Starter Kit]].
+
+Use ':tangle no' to disable specific source blocks
+
+* Starter Kit Magit
+Magit is an interface to the version control system Git, implemented
+as an Emacs package.
+
+https://github.com/magit/magit
+
+** Check Dependencies
+Determine whether required packages are installed. If not, use ELPA to
+install them.
+#+begin_src emacs-lisp
+  (starter-kit-install-if-needed 'magit)
+#+end_src
+
+** Magit status key binding
+Taken from https://github.com/abo-abo/hydra/wiki/Emacs
+
+#+begin_src emacs-lisp
+  (global-set-key (kbd "C-x g") 'magit-status)
+  (global-set-key (kbd "C-x M-g") 'magit-dispatch-popup)
+#+end_src
+
+#+begin_src emacs-lisp
+  (add-hook 'magit-mode-hook
+        (lambda ()
+          (define-key magit-mode-map (kbd "C-j") 'magit-goto-next-section)
+          (define-key magit-mode-map (kbd "C-k") 'magit-goto-previous-section)))
+#+end_src
+
+** Built-in ido support
+Taken from https://github.com/DarwinAwardWinner/ido-completing-read-plus#packages-with-built-in-ido-support
+
+#+begin_src emacs-lisp
+  (setq magit-completing-read-function 'magit-ido-completing-read)
+#+end_src
+
+
