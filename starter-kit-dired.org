@@ -1,0 +1,20 @@
+#+TITLE: Starter Kit Dired
+#+OPTIONS: toc:nil num:nil ^:nil
+
+This is part of the [[file:starter-kit.org][Emacs Starter Kit]].
+
+* Starter Kit Dired
+
+** Other window as target directory                                  :visual:
+#+name: starter-kit-dired-other-window
+#+begin_src emacs-lisp
+  (setq dired-dwim-target 1)
+#+end_src
+
+** Dired-x                                                           :visual:
+   :PROPERTIES:
+   :CUSTOM_ID: dired-x
+   :END:
+#+name: starter-kit-dired-x
+#+begin_src emacs-lisp
+#+end_src
