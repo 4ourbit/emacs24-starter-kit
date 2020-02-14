@@ -5,16 +5,21 @@ This is part of the [[file:starter-kit.org][Emacs Starter Kit]].
 
 * Starter Kit Dired
 
-** Other window as target directory                                  :visual:
-#+name: starter-kit-dired-other-window
+** Basic settings
+#+name: dired-dwim
 #+begin_src emacs-lisp
-  (setq dired-dwim-target 1)
+  (setq dired-dwim-target 1
+	dired-isearch-filenames 'dwim
+	dired-listing-switches "-v -alR --group-directories-first --human-readable")
 #+end_src
 
-** Dired-x                                                           :visual:
-   :PROPERTIES:
-   :CUSTOM_ID: dired-x
-   :END:
-#+name: starter-kit-dired-x
+** Key bindings
+#+name: dired-mode-hook
 #+begin_src emacs-lisp
+     (add-hook 'dired-mode-hook
+               (lambda ()
+                 (define-key dired-mode-map (kbd "<tab>")
+                             'dired-hide-subdir)
+                 (define-key dired-mode-map (kbd "C-<tab>")
+                             'dired-hide-all)))
 #+end_src
