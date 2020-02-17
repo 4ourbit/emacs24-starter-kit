@@ -433,7 +433,7 @@ _SPC_ cancel
     ("F" dired-do-find-marked-files)
     ("G" dired-do-chgrp)
     ("g" revert-buffer)        ;; read all directories again (refresh)
-    ("i" dired-maybe-insert-subdir)
+    ("i" my/dired-maybe-insert-subdir)
     ("l" dired-do-redisplay)   ;; relist the marked or singel directory
     ("M" dired-do-chmod)
     ("m" dired-mark)
