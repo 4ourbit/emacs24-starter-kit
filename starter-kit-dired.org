@@ -93,5 +93,9 @@ Also see [[./starter-kit-hydras.org][starter-kit-hydras.org]] for additional key
 	      (define-key dired-mode-map (kbd "i")
 			  'my/dired-maybe-insert-subdir)
 	      (define-key dired-mode-map (kbd "e")
-			  'diredp-ediff)))
+			  'diredp-ediff)
+	      (define-key dired-mode-map (kbd "C-M-i")
+			  'dired-jump)
+	      (define-key dired-mode-map (kbd "<backspace>")
+			  'dired-jump)))
 #+end_src
