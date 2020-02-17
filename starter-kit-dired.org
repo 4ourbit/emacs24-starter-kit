@@ -13,13 +13,64 @@ This is part of the [[file:starter-kit.org][Emacs Starter Kit]].
 	dired-listing-switches "-v -alR --group-directories-first --human-readable")
 #+end_src
 
+** Dired-x
+#+name: dired-x
+#+begin_src emacs-lisp
+  (add-hook 'dired-mode-hook
+	    (lambda ()
+	      (load-library "dired-x")))
+#+end_src
+
+** Additional Dired+ functionality
+See https://github.com/emacsmirror/dired-plus/blob/master/dired%2B.el
+
+*** diredp-ediff
+  "Compare file at cursor with file FILE2 using `ediff'.
+FILE2 defaults to the file at the cursor as well.  If you enter just a
+directory name for FILE2, then the file at the cursor is compared with
+a file of the same name in that directory.  FILE2 is the second file
+given to `ediff'; the file at the cursor is the first.
+Try to guess a useful default value for FILE2, as follows:
+ * If the mark is active, use the file at mark.
+ * Else if the file at cursor is a autosave file or a backup file, use
+   the corresponding base file.
+ * Else if there is any backup file for the file at point, use the
+   newest backup file for it.
+ * Else use the file at point."
+#+begin_src emacs-lisp
+(defun diredp-ediff (file2)             ; Bound to `='
+  (interactive (progn (require 'ediff)
+                      (list (ediff-read-file-name ; In `ediff-util.el'.
+                             (format "Compare %s with" (dired-get-filename t))
+                             (dired-current-directory)
+                             (let* ((file           (dired-get-filename))
+                                    (file-sans-dir  (file-name-nondirectory file))
+                                    (file-dir       (file-name-directory file))
+                                    (file-at-mark   (and transient-mark-mode
+                                                         mark-active
+                                                         (save-excursion (goto-char (mark t))
+                                                                         (dired-get-filename t t))))
+                                    (last-backup    (file-newest-backup file)))
+                               (cond
+                                 (file-at-mark)
+                                 ((auto-save-file-name-p file-sans-dir)
+                                  (expand-file-name (substring file-sans-dir 1 -1) file-dir))
+                                 ((backup-file-name-p file-sans-dir)
+                                  (expand-file-name (file-name-sans-versions file-sans-dir) file-dir))
+                                 (last-backup)
+                                 (t file)))))))
+  (ediff-files (dired-get-filename) file2)) ; In `ediff.el'.
+#+end_src
+
 ** Key bindings
+Also see [[./starter-kit-hydras.org][starter-kit-hydras.org]] for additional key bindings.
+
 #+name: dired-mode-hook
 #+begin_src emacs-lisp
-     (add-hook 'dired-mode-hook
-               (lambda ()
-                 (define-key dired-mode-map (kbd "<tab>")
-                             'dired-hide-subdir)
-                 (define-key dired-mode-map (kbd "C-<tab>")
-                             'dired-hide-all)))
+  (add-hook 'dired-mode-hook
+	    (lambda ()
+	      (define-key dired-mode-map (kbd "<tab>")
+			  'dired-hide-subdir)
+	      (define-key dired-mode-map (kbd "C-<tab>")
+			  'dired-hide-all)))
 #+end_src
