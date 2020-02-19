@@ -402,7 +402,26 @@ _SPC_ cancel
 
 *** Dired
 #+begin_src emacs-lisp
-  (defhydra hydra-dired-mark (:color teal)
+  (defvar dired-mode-map)
+
+  (declare-function dired-mark "dired")
+  (defhydra hydra-marked-items (dired-mode-map "")
+    "
+Marked %(if (eq 1 (length (dired-get-marked-files))) (dired-get-marked-files 'no-dir) (length (dired-get-marked-files))): "
+    ("m" dired-mark "mark")
+    ("M" dired-unmark-backward "unmark")
+    ("q" nil :color blue))
+
+  (declare-function dired-copy-filename-as-kill "dired")
+  (defhydra hydra-dired-copy-filename-as-kill (dired-mode-map "")
+      "
+topdir: %(eval dired-directory)
+
+copy: [C-u _w_]: path from topdir, [C-u 0 _w_]: path from root, "
+      ("w" dired-copy-filename-as-kill "filename")
+      ("q" nil :color blue))
+
+  (defhydra hydra-dired-mark-special (:color teal)
     "mark"
     ("%"  dired-mark-files-regexp "regexp")
     ("("  dired-mark-sexp         "sexp")
@@ -412,25 +431,25 @@ _SPC_ cancel
     ("@"  dired-mark-symlinks     "symlinks")
     ("O"  dired-mark-omitted      "omitted")
     ("s"  dired-mark-subdir-files "subdir files")
-    ("q"  nil                     "cancel" :color blue))
+    ("q"  nil :color blue))
 
   (defhydra hydra-dired (:hint nil :color teal)
       "
-    topdir: %(eval dired-directory)
+topdir: %(eval dired-directory)
 
     Inode            File           Marks            Display          Directory
   ------------------------------------------------------------------------------------------
     _d_ flag deletion  ^ ^               _m_ mark          _(_ details
     _x_ expunge        _o_ other window  _u_ unmark        _)_ omit-mode     _C-M-i_ jump
     ^ ^                _e_ Ediff         _U_ unmark all    ^ ^               ^ ^
-    _w_ copy name      _M_ chmod         _t_ toggle marks  _g_ revert buf    _+_ mkdir
+    _w_ copy path      _M_ chmod         _t_ toggle marks  _g_ revert buf    _+_ mkdir
     _C_ copy           _G_ chgrp         _*_ mark special  _s_ort            _=_ diff
     _R_ rename         ^ ^               ^ ^               ^ ^               ^ ^
     ^ ^                _A_ find regexp   _F_ open marked
     _Z_ compress       _Q_ repl regexp   _D_ delete marked
     "
       ("C-M-i" dired-jump)
-      ("*" hydra-dired-mark/body)
+      ("*" hydra-dired-mark-special/body)
       ("(" dired-hide-details-mode)
       (")" diredp-omit-mode)
       ("+" dired-create-directory)
@@ -454,7 +473,7 @@ _SPC_ cancel
       ("t" dired-toggle-marks)
       ("U" dired-unmark-all-marks)
       ("u" dired-unmark)
-      ("w" dired-copy-filename-as-kill)
+      ("w" hydra-dired-copy-filename-as-kill/body)
       ("x" dired-do-flagged-delete)
       ("Z" dired-do-compress)
       ("q" nil :color blue))
