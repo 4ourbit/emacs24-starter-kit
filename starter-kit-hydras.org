@@ -402,14 +402,20 @@ _SPC_ cancel
 
 *** Dired
 #+begin_src emacs-lisp
+  (load-library "dired")
   (defvar dired-mode-map)
 
   (declare-function dired-mark "dired")
   (defhydra hydra-marked-items (dired-mode-map "")
     "
 Marked %(if (eq 1 (length (dired-get-marked-files))) (dired-get-marked-files 'no-dir) (length (dired-get-marked-files))): "
-    ("m" dired-mark "mark")
-    ("M" dired-unmark-backward "unmark")
+    ("m" dired-mark             "mark")
+    ("M" dired-unmark-backward  "unmark back")
+    ("u" dired-unmark           "unmark forw")
+    ("U" dired-unmark-all-marks "unmark all")
+    ("j" dired-next-marked-file "next")
+    ("k" dired-prev-marked-file "prev")
+;;    ("*" hydra-dired-mark-special/body "mark special")
     ("q" nil :color blue))
 
   (declare-function dired-copy-filename-as-kill "dired")
@@ -464,15 +470,15 @@ topdir: %(eval dired-directory)
       ("G" dired-do-chgrp)
       ("g" revert-buffer)        ;; read all directories again (refresh)
       ("M" dired-do-chmod)
-      ("m" dired-mark)
+      ("m" hydra-marked-items/dired-mark)
       ("O" dired-display-file)
       ("o" dired-find-file-other-window)
       ("Q" dired-do-find-regexp-and-replace)
       ("R" dired-do-rename)
       ("s" dired-sort-toggle-or-edit)
       ("t" dired-toggle-marks)
-      ("U" dired-unmark-all-marks)
-      ("u" dired-unmark)
+      ("U" hydra-marked-items/dired-unmark-all-marks)
+      ("u" hydra-marked-items/dired-unmark)
       ("w" hydra-dired-copy-filename-as-kill/body)
       ("x" dired-do-flagged-delete)
       ("Z" dired-do-compress)
@@ -480,7 +486,8 @@ topdir: %(eval dired-directory)
 #+end_src
 
 #+begin_src emacs-lisp
-  (add-hook 'dired-mode-hook
-	    (lambda ()
-	      (define-key dired-mode-map (kbd "?") 'hydra-dired/body)))
+  (defun my/hydra-dired-mode-keys ()
+    "my hydra keys for `dired'."
+    (define-key dired-mode-map (kbd "?") 'hydra-dired/body))
+  (add-hook 'dired-mode-hook #'my/hydra-dired-mode-keys)
 #+end_src

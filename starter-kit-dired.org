@@ -10,21 +10,32 @@ This is part of the [[file:starter-kit.org][Emacs Starter Kit]].
 #+begin_src emacs-lisp
   (setq dired-dwim-target 1
 	dired-isearch-filenames 'dwim
-	dired-listing-switches "-v -AlR --group-directories-first --human-readable")
+	dired-listing-switches "-v -AlR --group-directories-first --human-readable"
+        dired-trivial-filenames "\\`\\.\\.?\\'\\|\\`#\\|\\`\\.")
 #+end_src
 
 ** Dired-x
+Loading Dired-X will automatically put on the hook ‘dired-extra-startup’ to
+‘dired-mode-hook’ to get extra Dired features:
++ V -- run mail on folder (see ‘dired-bind-vm’)
++ I -- run info on file
++ N -- run man on file
++ F -- visit all marked files simultaneously
++ C-x M-o -- toggle omitting of files
++ M-( -- mark by Lisp expression
+
 #+name: dired-x
 #+begin_src emacs-lisp
-  (add-hook 'dired-mode-hook
-	    (lambda ()
-	      (load-library "dired-x")))
+  (defun my/load-dired-x () (load-library "dired-x"))
+  (add-hook 'dired-load-hook #'my/load-dired-x)
 #+end_src
+** Key bindings
+Also see [[./starter-kit-hydras.org][starter-kit-hydras.org]] for additional key bindings.
 
-** Additional Dired+ functionality
+*** my/diredp-ediff
+Taken from Dired+
 See https://github.com/emacsmirror/dired-plus/blob/master/dired%2B.el
 
-*** diredp-ediff
   "Compare file at cursor with file FILE2 using `ediff'.
 FILE2 defaults to the file at the cursor as well.  If you enter just a
 directory name for FILE2, then the file at the cursor is compared with
@@ -38,7 +49,7 @@ Try to guess a useful default value for FILE2, as follows:
    newest backup file for it.
  * Else use the file at point."
 #+begin_src emacs-lisp
-(defun diredp-ediff (file2)             ; Bound to `='
+(defun my/diredp-ediff (file2)             ; Bound to `='
   (interactive (progn (require 'ediff)
                       (list (ediff-read-file-name ; In `ediff-util.el'.
                              (format "Compare %s with" (dired-get-filename t))
@@ -79,23 +90,33 @@ Try to guess a useful default value for FILE2, as follows:
 	(recenter 2))))
 #+end_src
 
-** Key bindings
-Also see [[./starter-kit-hydras.org][starter-kit-hydras.org]] for additional key bindings.
-
-#+name: dired-mode-hook
+*** my/dired-mode-keys
+#+name: dired-mode-hook-keys
 #+begin_src emacs-lisp
-  (add-hook 'dired-mode-hook
-	    (lambda ()
-	      (define-key dired-mode-map (kbd "<tab>")
-			  'dired-hide-subdir)
-	      (define-key dired-mode-map (kbd "C-<tab>")
-			  'dired-hide-all)
-	      (define-key dired-mode-map (kbd "i")
-			  'my/dired-maybe-insert-subdir)
-	      (define-key dired-mode-map (kbd "e")
-			  'diredp-ediff)
-	      (define-key dired-mode-map (kbd "C-M-i")
-			  'dired-jump)
-	      (define-key dired-mode-map (kbd "<backspace>")
-			  'dired-jump)))
+  (defun my/dired-mode-keys ()
+    "my keys for `dired'."
+    (define-key dired-mode-map (kbd "<tab>")       'dired-hide-subdir)
+    (define-key dired-mode-map (kbd "C-<tab>")     'dired-hide-all)
+    (define-key dired-mode-map (kbd "i")           'my/dired-maybe-insert-subdir)
+    (define-key dired-mode-map (kbd "e")           'my/diredp-ediff)
+    (define-key dired-mode-map (kbd "C-M-i")       'dired-jump) ; like in org-mode
+    (define-key dired-mode-map (kbd "<backspace>") 'dired-jump) ; like in Windows Explorer
+
+    ;; use same keys with modifiers as speed keys
+    (local-set-key "\M-." 'my/dired-maybe-insert-subdir))
+  (add-hook 'dired-mode-hook #'my/dired-mode-keys)
+#+end_src
+
+** Initial Dired state
+#+name: dired-mode-hook-setup
+#+begin_src emacs-lisp
+  ;;; Turn on omit from Dired-x.
+  (setq dired-omit-size-limit nil) ; No maximum size for Omit.
+  (setq-default dired-omit-mode t) ; Turn on Omit mode (buffer-local).
+
+  ;;; Turn on Hide details mode.
+  (add-hook 'dired-mode-hook #'dired-hide-details-mode)
+
+  ;;; Turn on Truncate lines mode.
+  (add-hook 'dired-mode-hook #'toggle-truncate-lines)
 #+end_src
