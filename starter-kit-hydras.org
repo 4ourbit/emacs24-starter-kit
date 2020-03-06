@@ -491,3 +491,98 @@ topdir: %(eval dired-directory)
     (define-key dired-mode-map (kbd "?") 'hydra-dired/body))
   (add-hook 'dired-mode-hook #'my/hydra-dired-mode-keys)
 #+end_src
+
+*** IBuffer
+#+begin_src emacs-lisp
+(defhydra hydra-ibuffer-main (:hint nil :color teal)
+  "
+    Buffer            Actions         Marks            Display          Directory
+  ------------------------------------------------------------------------------------
+    _d_ flag deletion  ^ ^               _m_ mark          _(_ details
+    _x_ expunge        _o_ other window  _u_ unmark        _)_ omit-mode
+    ^ ^                _H_ other frame   _U_ unmark all    ^ ^               ^ ^
+    _w_ copy filename  _M_ chmod         _t_ toggle marks  _g_ revert buf    _+_ mkdir
+    _C_ copy buffer    _O_ occur marked  _*_ mark special  _,_ sort toogle   _=_ diff
+    _R_ rename         ^ ^               ^ ^               _s_ sort special  ^ ^
+    ^ ^                _A_ view marked   _S_ save marked   _/_ filter
+    _T_ read-only      _V_ revert marked _D_ delete marked
+    "
+  ("d" ibuffer-mark-for-delete)
+  ("x" ibuffer-do-kill-on-deletion-marks)
+  ("w" ibuffer-copy-filename-as-kill)
+  ("C" ibuffer-copy-buffername-as-kill)
+
+  ("m" ibuffer-mark-forward)
+  ("u" ibuffer-unmark-forward)
+  ("U" ibuffer-unmark-all)
+  ("t" ibuffer-toggle-marks)
+  ("*" hydra-ibuffer-mark/body :color amaranth)
+
+  ("D" ibuffer-do-delete)
+  ("S" ibuffer-do-save)
+  ("A" ibuffer-do-view)
+  ("H" ibuffer-do-view-other-frame)
+  ("O" ibuffer-do-occur)
+  ("R" ibuffer-do-rename-uniquely)
+  ("T" ibuffer-do-toggle-read-only)
+  ("V" ibuffer-do-revert)
+
+  ("E" ibuffer-do-eval "eval")
+  ("W" ibuffer-do-view-and-eval "view-and-eval")
+  ("!" ibuffer-do-shell-command-file "shell-command-file")
+  ("Q" ibuffer-do-query-replace "query-replace")
+  ("I" ibuffer-do-query-replace-regexp "query-replace-regexp")
+  ("N" ibuffer-do-shell-command-pipe-replace "shell-cmd-pipe-replace")
+  ("X" ibuffer-do-shell-command-pipe "shell-command-pipe")
+
+  ("g" ibuffer-update)
+  ("," ibuffer-toggle-sorting-mode)
+  ("s" hydra-ibuffer-sort/body :color amaranth)
+  ("/" hydra-ibuffer-filter/body :color amaranth)
+
+  ("o" ibuffer-visit-buffer-other-window)
+  ("q" nil :color blue))
+
+(defhydra hydra-ibuffer-mark (:color teal :columns 5)
+  "Mark"
+  ("M" ibuffer-mark-by-mode "mode")
+  ("m" ibuffer-mark-modified-buffers "modified")
+  ("u" ibuffer-mark-unsaved-buffers "unsaved")
+  ("s" ibuffer-mark-special-buffers "special")
+  ("r" ibuffer-mark-read-only-buffers "read-only")
+  ("/" ibuffer-mark-dired-buffers "dired")
+  ("e" ibuffer-mark-dissociated-buffers "dissociated")
+  ("h" ibuffer-mark-help-buffers "help")
+  ("z" ibuffer-mark-compressed-file-buffers "compressed")
+  ("q" nil :color blue))
+
+(defhydra hydra-ibuffer-sort (:color teal :columns 3)
+  "Sort"
+  ("i" ibuffer-invert-sorting "invert")
+  ("a" ibuffer-do-sort-by-alphabetic "alphabetic")
+  ("v" ibuffer-do-sort-by-recency "recently used")
+  ("s" ibuffer-do-sort-by-size "size")
+  ("f" ibuffer-do-sort-by-filename/process "filename")
+  ("m" ibuffer-do-sort-by-major-mode "mode")
+  ("q" nil :color blue))
+
+(defhydra hydra-ibuffer-filter (:color teal :columns 4)
+  "Filter"
+  ("m" ibuffer-filter-by-used-mode "mode")
+  ("M" ibuffer-filter-by-derived-mode "derived mode")
+  ("n" ibuffer-filter-by-name "name")
+  ("c" ibuffer-filter-by-content "content")
+  ("e" ibuffer-filter-by-predicate "predicate")
+  ("f" ibuffer-filter-by-filename "filename")
+  (">" ibuffer-filter-by-size-gt "size")
+  ("<" ibuffer-filter-by-size-lt "size")
+  ("/" ibuffer-filter-disable "disable")
+  ("q" nil :color blue))
+#+end_src
+
+#+begin_src emacs-lisp
+  (defun my/hydra-ibuffer-mode-keys ()
+    "my hydra keys for `ibuffer'."
+    (define-key ibuffer-mode-map (kbd "?") 'hydra-ibuffer-main/body))
+  (add-hook 'ibuffer-hook #'my/hydra-ibuffer-mode-keys)
+#+end_src
