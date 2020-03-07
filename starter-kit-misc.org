@@ -129,6 +129,18 @@ you were probably hoping for when you set ido-everywhere to t).
   ;;     (disable prefix "magit-")))
 #+end_src
 
+** Doc-view adjustments
+| Scansnap S1500 | Color / Grayscale | Monochrome | Simplex / Duplex |
+|----------------+-------------------+------------+------------------|
+| Normal mode    | 150 dpi           | 300 dpi    | 20 ppm           |
+| Better mode    | 200 dpi           | 400 dpi    | 20 ppm           |
+| Best mode      | 300 dpi           | 600 dpi    | 20 ppm           |
+| Excellent mode | 600 dpi           | 1,200 dpi  | 5 ppm            |
+
+#+begin_src emacs-lisp 
+  (require 'doc-view)
+  (setq doc-view-resolution 300)
+#+end_src
 
 ** Other, spell checking, tabs, imenu and a coding hook
 #+begin_src emacs-lisp 
