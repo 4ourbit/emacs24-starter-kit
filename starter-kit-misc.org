@@ -295,6 +295,7 @@ let them live in the =backup/= directory inside of the starter kit.
 *** Remember open buffers and place of point
 #+BEGIN_SRC emacs-lisp
   (toggle-save-place-globally)
+  (setq desktop-modes-not-to-save '(tags-table-mode dired-mode))
   (desktop-save-mode 1)
   (desktop-read)
 #+END_SRC
