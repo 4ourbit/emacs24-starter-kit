@@ -1,4 +1,3 @@
-
 #+TITLE: Starter Kit Latex
 #+OPTIONS: toc:nil num:nil ^:nil
 
