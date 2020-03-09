@@ -12,6 +12,22 @@ short bindings with a common prefix - a Hydra.
 
 https://github.com/abo-abo/hydra
 
+Assigning colors to a hydra recipe should follow this convention:
+
+https://github.com/abo-abo/hydra/wiki/Hydra-Colors
+
+|----------+-----------+-----------------------+-----------------|
+| Body     | Head      | Executing NON-HEADS   | Executing HEADS |
+| Color    | Inherited |                       |                 |
+|          | Color     |                       |                 |
+|----------+-----------+-----------------------+-----------------|
+| amaranth | red       | Disallow and Continue | Continue        |
+| teal     | blue      | Disallow and Continue | Quit            |
+| pink     | red       | Allow and Continue    | Continue        |
+| red      | red       | Allow and Quit        | Continue        |
+| blue     | blue      | Allow and Quit        | Quit            |
+|----------+-----------+-----------------------+-----------------|
+
 ** Check Dependencies
 
 Determine whether required packages are installed. If not, use ELPA to
@@ -299,15 +315,15 @@ _B_uffers (3-way)   _F_iles (3-way)                          _w_ordwise
   (declare-function dired-mark "dired")
   (defhydra hydra-marked-items (dired-mode-map "")
     "
-Marked %(if (eq 1 (length (dired-get-marked-files))) (dired-get-marked-files 'no-dir) (length (dired-get-marked-files))): "
+%(dired-mark-prompt nil (dired-get-marked-files)): "
     ("m" dired-mark             "mark")
-    ("M" dired-unmark-backward  "unmark back")
-    ("u" dired-unmark           "unmark forw")
-    ("U" dired-unmark-all-marks "unmark all")
+    ("u" dired-unmark           "unmark")
+    ("t" dired-toggle-marks     "toggle")
     ("j" dired-next-marked-file "next")
     ("k" dired-prev-marked-file "prev")
-;;    ("*" hydra-dired-mark-special/body "mark special" :color amaranth)
-    ("q" nil :color blue))
+    ("*" hydra-dired-mark-special/body "mark special" :color teal)
+    ("U" dired-unmark-all-marks "unmark all" :color blue)
+    ("q" nil                    "quit" :color blue))
 
   (declare-function dired-copy-filename-as-kill "dired")
   (defhydra hydra-dired-copy-filename-as-kill (dired-mode-map "")
@@ -318,7 +334,7 @@ copy: [C-u _w_]: path from topdir, [C-u 0 _w_]: path from root, "
       ("w" dired-copy-filename-as-kill "filename")
       ("q" nil :color blue))
 
-  (defhydra hydra-dired-mark-special (:color teal)
+  (defhydra hydra-dired-mark-special (:color blue)
     "mark"
     ("%"  dired-mark-files-regexp "regexp")
     ("("  dired-mark-sexp         "sexp")
@@ -328,52 +344,55 @@ copy: [C-u _w_]: path from topdir, [C-u 0 _w_]: path from root, "
     ("@"  dired-mark-symlinks     "symlinks")
     ("O"  dired-mark-omitted      "omitted")
     ("s"  dired-mark-subdir-files "subdir files")
-    ("q"  nil :color blue))
+    ("q"  nil                     "quit"))
 
-  (defhydra hydra-dired (:hint nil :color teal)
+  (defhydra hydra-dired (:hint none :color blue)
       "
 topdir: %(eval dired-directory)
 
-    Inode            File           Marks            Display          Directory
-  ------------------------------------------------------------------------------------------
-    _d_ flag deletion  ^ ^               _m_ mark          _(_ details
-    _x_ expunge        _o_ other window  _u_ unmark        _)_ omit-mode     _C-M-i_ jump
-    ^ ^                _e_ Ediff         _U_ unmark all    ^ ^               ^ ^
-    _w_ copy path      _M_ chmod         _t_ toggle marks  _g_ revert buf    _+_ mkdir
-    _C_ copy           _G_ chgrp         _*_ mark special  _s_ort            _=_ diff
-    _R_ rename         ^ ^               ^ ^               ^ ^               ^ ^
-    ^ ^                _A_ find regexp   _F_ open marked
-    _Z_ compress       _Q_ repl regexp   _D_ delete marked
+    File             Inode          Marks            Display
+  ----------------------------------------------------------------------
+    _d_ flag deletion  ^ ^               _m_ mark          ?(? _(_ details
+    _x_ expunge        ^ ^               _*_ mark special  ?C-x M-o? _C-x M-o_ omitˣ
+    ^ ^                _M_ chmod         ^ ^               ^ ^
+    _w_ copy path      _G_ chgrp         ^ ^               _s_ sort
+    _C_ copy           ^ ^               ^ ^               ^ ^
+    _R_ rename         Directory         ^ ^               ^ ^
+    ^ ^                ---------       _F_ open markedˣ    ^ ^
+    ^ ^                _+_ mkdir         _D_ delete marked _C-o_ view other window
+    _e_ Ediff          _=_ diff          _A_ find regexp   _o_ other window
+    _Z_ compress       _C-M-i_ jump      _Q_ repl regexp   _g_ revert buf
     "
-      ("C-M-i" dired-jump)
-      ("*" hydra-dired-mark-special/body :color amaranth)
-      ("(" dired-hide-details-mode)
-      (")" diredp-omit-mode)
+      ("C-M-i" dired-jump :color red)
+      ("*" hydra-dired-mark-special/body :color teal)
+      ("(" dired-hide-details-mode
+         (if (bound-and-true-p dired-hide-details-mode)
+           "[ ]" "[x]") :color red)
+      ("C-x M-o" dired-omit-mode
+         (if (bound-and-true-p dired-omit-mode)
+           "[x]" "[ ]") :color red)
       ("+" dired-create-directory)
       ("=" dired-diff)
-      ("?" dired-summary)
+      ("?" dired-summary :color red)
       ("A" dired-do-find-regexp)
-      ("C" dired-do-copy)        ;; Copy all marked files
-      ("d" dired-flag-file-deletion)
+      ("C" dired-do-copy)
+      ("d" dired-flag-file-deletion :color red)
       ("D" dired-do-delete)
       ("e" dired-ediff-files)
       ("F" dired-do-find-marked-files)
       ("G" dired-do-chgrp)
-      ("g" revert-buffer)        ;; read all directories again (refresh)
+      ("g" revert-buffer)
       ("M" dired-do-chmod)
-      ("m" hydra-marked-items/dired-mark)
-      ("O" dired-display-file)
+      ("m" hydra-marked-items/dired-mark :color teal)
+      ("C-o" dired-display-file :color red)
       ("o" dired-find-file-other-window)
       ("Q" dired-do-find-regexp-and-replace)
       ("R" dired-do-rename)
-      ("s" dired-sort-toggle-or-edit)
-      ("t" dired-toggle-marks)
-      ("U" hydra-marked-items/dired-unmark-all-marks)
-      ("u" hydra-marked-items/dired-unmark)
-      ("w" hydra-dired-copy-filename-as-kill/body :color amaranth)
+      ("s" dired-sort-toggle-or-edit :color red)
+      ("w" hydra-dired-copy-filename-as-kill/body :color teal)
       ("x" dired-do-flagged-delete)
       ("Z" dired-do-compress)
-      ("q" nil :color blue))
+      ("q" nil))
 #+end_src
 
 #+begin_src emacs-lisp
