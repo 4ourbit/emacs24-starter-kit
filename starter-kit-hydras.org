@@ -355,13 +355,13 @@ topdir: %(eval dired-directory)
     _d_ flag deletion  ^ ^               _m_ mark          ?(? _(_ details
     _x_ expunge        ^ ^               _*_ mark special  ?C-x M-o? _C-x M-o_ omitˣ
     ^ ^                _M_ chmod         ^ ^               ^ ^
-    _w_ copy path      _G_ chgrp         ^ ^               _s_ sort
-    _C_ copy           ^ ^               ^ ^               ^ ^
+    _w_ copy path      _G_ chgrp         _F_ open markedˣ  _s_ sort
+    _C_ copy           ^ ^               _D_ delete marked ^ ^
     _R_ rename         Directory         ^ ^               ^ ^
-    ^ ^                ---------       _F_ open markedˣ    ^ ^
-    ^ ^                _+_ mkdir         _D_ delete marked _C-o_ view other window
-    _e_ Ediff          _=_ diff          _A_ find regexp   _o_ other window
-    _Z_ compress       _C-M-i_ jump      _Q_ repl regexp   _g_ revert buf
+    ^ ^                ---------         ^ ^               _C-M-i_ jump
+    _e_ Ediff          _=_ diff          ^ ^               _C-o_ view other window
+    _c_ compress as    _+_ mkdir         _A_ find regexp   _o_ other window
+    _Z_ (un)compress   _Z_ (un)tar.gz    _Q_ repl regexp   _g_ revert buf
     "
       ("C-M-i" dired-jump :color red)
       ("*" hydra-dired-mark-special/body :color teal)
