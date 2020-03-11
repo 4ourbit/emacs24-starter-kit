@@ -313,17 +313,18 @@ _B_uffers (3-way)   _F_iles (3-way)                          _w_ordwise
   (defvar dired-mode-map)
 
   (declare-function dired-mark "dired")
-  (defhydra hydra-marked-items (dired-mode-map "")
+  (defhydra my/hydra-dired-marked-items (dired-mode-map "")
     "
 %(dired-mark-prompt nil (dired-get-marked-files)): "
-    ("m" dired-mark             "mark")
-    ("u" dired-unmark           "unmark")
-    ("t" dired-toggle-marks     "toggle")
-    ("j" dired-next-marked-file "next")
-    ("k" dired-prev-marked-file "prev")
-    ("*" hydra-dired-mark-special/body "mark special" :color teal)
-    ("U" dired-unmark-all-marks "unmark all" :color blue)
-    ("q" nil                    "quit" :color blue))
+    ("m" dired-mark                      "mark")
+    ("<backspace>" dired-unmark-backward "unmark back")
+    ("u" dired-unmark                    "unmark")
+    ("t" dired-toggle-marks              "toggle")
+    ("j" dired-next-marked-file          "next")
+    ("k" dired-prev-marked-file          "prev")
+    ("*" hydra-dired-mark-special/body   "mark special" :color teal)
+    ("U" dired-unmark-all-marks          "unmark all" :color blue)
+    ("q" nil                             "quit" :color blue))
 
   (declare-function dired-copy-filename-as-kill "dired")
   (defhydra hydra-dired-copy-filename-as-kill (dired-mode-map "")
@@ -346,22 +347,22 @@ copy: [C-u _w_]: path from topdir, [C-u 0 _w_]: path from root, "
     ("s"  dired-mark-subdir-files "subdir files")
     ("q"  nil                     "quit"))
 
-  (defhydra hydra-dired (:hint none :color blue)
+  (defhydra hydra-dired (:color blue :hint none)
       "
 topdir: %(eval dired-directory)
 
     File             Inode          Marks            Display
-  ----------------------------------------------------------------------
-    _d_ flag deletion  ^ ^               _m_ mark          ?(? _(_ details
-    _x_ expunge        ^ ^               _*_ mark special  ?C-x M-o? _C-x M-o_ omitˣ
-    ^ ^                _M_ chmod         ^ ^               ^ ^
-    _w_ copy path      _G_ chgrp         _F_ open markedˣ  _s_ sort
-    _C_ copy           ^ ^               _D_ delete marked ^ ^
-    _R_ rename         Directory         ^ ^               ^ ^
-    ^ ^                ---------         ^ ^               _C-M-i_ jump
-    _e_ Ediff          _=_ diff          ^ ^               _C-o_ view other window
-    _c_ compress as    _+_ mkdir         _A_ find regexp   _o_ other window
-    _Z_ (un)compress   _Z_ (un)tar.gz    _Q_ repl regexp   _g_ revert buf
+  -----------------------------------------------------------------------------
+    _d_ flag deletion  ^ ^               _m_ mark             ?(? _(_ details
+    _x_ expunge        ^ ^               _*_ mark special     ?C-x M-o? _C-x M-o_ omitˣ
+    ^ ^                _M_ chmod         ^ ^                  ^ ^
+    _w_ copy path      _G_ chgrp         _F_ open markedˣ     _s_ sort
+    _C_ copy           ^ ^               _D_ delete marked    ^ ^
+    _R_ rename         Directory         ^ ^                  ^ ^
+    ^ ^                ---------         ^ ^                _C-M-i_ jump
+    _e_ Ediff          _=_ diff          ^ ^                  _C-o_ view other window
+    _c_ compress to    _+_ mkdir         _A_ find regexp      _o_ other window
+    _Z_ (un)compress   _Z_ (un)tar.gz    _Q_ repl regexp      _g_ revert buf
     "
       ("C-M-i" dired-jump :color red)
       ("*" hydra-dired-mark-special/body :color teal)
@@ -376,6 +377,7 @@ topdir: %(eval dired-directory)
       ("?" dired-summary :color red)
       ("A" dired-do-find-regexp)
       ("C" dired-do-copy)
+      ("c" my/dired-do-compress-to)
       ("d" dired-flag-file-deletion :color red)
       ("D" dired-do-delete)
       ("e" dired-ediff-files)
@@ -383,7 +385,7 @@ topdir: %(eval dired-directory)
       ("G" dired-do-chgrp)
       ("g" revert-buffer)
       ("M" dired-do-chmod)
-      ("m" hydra-marked-items/dired-mark :color teal)
+      ("m" my/hydra-dired-marked-items/dired-mark :color teal)
       ("C-o" dired-display-file :color red)
       ("o" dired-find-file-other-window)
       ("Q" dired-do-find-regexp-and-replace)

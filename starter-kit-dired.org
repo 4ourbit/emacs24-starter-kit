@@ -17,6 +17,9 @@ This is part of the [[file:starter-kit.org][Emacs Starter Kit]].
 Adding support for additional compression formats with p7zip. For supported
 formats see https://www.7-zip.org/
 
+Be sure to add the compression format to the font lock file extension
+variables below.
+
 #+name: dired-aux-compress
 #+begin_src emacs-lisp
   (eval-after-load "dired-aux"
@@ -112,7 +115,6 @@ Try to guess a useful default value for FILE2, as follows:
 	(recenter 2))))
 #+end_src
 
-
 *** my/dired-do-compress-to
 #+name: my/dired-do-compress-to
 #+begin_src emacs-lisp
@@ -122,6 +124,7 @@ Try to guess a useful default value for FILE2, as follows:
     Choose the archiving command based on the archive file-name extension
     and `dired-compress-files-alist'."
     (interactive)
+    (require 'dired-aux)
     (let* ((current (dired-get-filename t))
 	   ;; Get the file at the mark.
 	   (default (if (and transient-mark-mode mark-active)
@@ -171,8 +174,143 @@ Try to guess a useful default value for FILE2, as follows:
 
     ;; use same keys with modifiers as speed keys
     (local-set-key "\M-." 'my/dired-maybe-insert-subdir))
+
+  ;;; Enable my key bindings
   (add-hook 'dired-mode-hook #'my/dired-mode-keys)
 #+end_src
+
+** Customize dired font lock and faces
+#+name: dired-customize-faces
+#+begin_src emacs-lisp
+  (defcustom my/dired-compressed-extensions
+    '(".tar" ".tgz" ".gz" ".rar" ".7z" ".deb" ".zip"
+      ".iso" ".msi" ".vhd")
+    "*List of compressed-file extensions, for highlighting."
+    :type '(repeat string) :group 'dired-faces)
+
+  (defface my/dired-compressed-file-suffix
+    '((t                   (:foreground "PaleGreen")))
+    "*Face used for compressed file suffixes in Dired buffers.
+  This means the `.' plus the file extension.  Example: `.zip'."
+    :group 'dired-faces)
+  (defvar my/dired-compressed-file-suffix 'my/dired-compressed-file-suffix)
+
+  (defcustom my/dired-file-name-maybe-date-extensions
+    '(".pdf" ".jpg" ".png")
+    "*List of file-name-maybe-date extensions, for highlighting."
+    :type '(repeat string) :group 'dired-faces)
+
+  (defface my/dired-file-name-maybe-date-face
+    '((t                   (:foreground "IndianRed2")))
+    "*Face used for file name suffixes and dates in files with
+  `my/dired-file-name-maybe-date-extensions' in Dired buffers.
+  This applies to `yyyy-mm-dd' or `yyyy_mm_dd' parts of the file name."
+    :group 'dired-faces)
+  (defvar my/dired-file-name-maybe-date-face 'my/dired-file-name-maybe-date-face)
+
+  (defcustom my/dired-file-name-maybe-date-extensions2
+    '(".txt" ".org" ".doc" ".docx" ".wps")
+    "*List of file-name-maybe-date extensions, for highlighting."
+    :type '(repeat string) :group 'dired-faces)
+
+  (defface my/dired-file-name-maybe-date-face2
+    '((t                   (:foreground "Gold")))
+    "*Face used for file name suffixes and dates in files with
+  `my/dired-file-name-maybe-date-extensions' in Dired buffers.
+  This applies to `yyyy-mm-dd' or `yyyy_mm_dd' parts of the file name."
+    :group 'dired-faces)
+  (defvar my/dired-file-name-maybe-date-face2 'my/dired-file-name-maybe-date-face2)
+#+end_src
+
+#+name: dired-font-lock-keywords
+#+begin_src emacs-lisp
+  (defvar my/dired-font-lock-keywords
+    (list
+     ;;
+     ;; Dired marks.
+     (list dired-re-mark '(0 dired-mark-face))
+     ;;
+     ;; Marked files.
+     (list (concat "^[" (char-to-string dired-marker-char) "]")
+           '(".+" (dired-move-to-filename) nil (0 dired-marked-face)))
+     ;;
+     ;; Flagged files.
+     (list (concat "^[" (char-to-string dired-del-marker) "]")
+           '(".+" (dired-move-to-filename) nil (0 dired-flagged-face)))
+     ;;
+     ;; Subdirectories.
+     (list dired-re-dir
+           '(".+" (dired-move-to-filename) nil (0 dired-directory-face)))
+     ;;
+     ;; Files suffixed with `completion-ignored-extensions'.
+     '(eval .
+            ;; It is quicker to first find just an extension, then go back to the
+            ;; start of that file name.  So we do this complex MATCH-ANCHORED form.
+            (list (concat "\\(" (regexp-opt completion-ignored-extensions) "\\|#\\)$")
+                  '(".+" (dired-move-to-filename) nil (0 dired-ignored-face))))
+     ;;
+     ;; Files suffixed with `completion-ignored-extensions'
+     ;; plus a character put in by -F.
+     '(eval .
+            (list (concat "\\(" (regexp-opt completion-ignored-extensions)
+                          "\\|#\\)[*=|]$")
+                  '(".+" (progn
+                           (end-of-line)
+                           ;; If the last character is not part of the filename,
+                           ;; move back to the start of the filename
+                           ;; so it can be fontified.
+                           ;; Otherwise, leave point at the end of the line;
+                           ;; that way, nothing is fontified.
+                           (unless (get-text-property (1- (point)) 'mouse-face)
+                             (dired-move-to-filename)))
+                    nil (0 dired-ignored-face))))
+     ;;
+     ;; Explicitly put the default face on file names ending in a colon to
+     ;; avoid fontifying them as directory header.
+     (list (concat dired-re-maybe-mark dired-re-inode-size dired-re-perms ".*:$")
+           '(".+" (dired-move-to-filename) nil (0 'default)))
+     ;;
+     ;; Directory headers.
+     (list dired-subdir-regexp '(1 dired-header-face))
+
+     ;;
+     ;; Files suffixed with `my/dired-file-name-maybe-date-extensions'
+     ;; plus occurrences of the prefix date in the filename (on the same line)
+     ;; are highlighted with a bolder face.
+     (list (concat "\\(" (concat (funcall #'regexp-opt my/dired-file-name-maybe-date-extensions) "\\)[*]?$"))
+           1 my/dired-file-name-maybe-date-face t)
+     '(eval .
+            (list (concat "\\(" (regexp-opt my/dired-file-name-maybe-date-extensions)
+                          "\\|#\\)$")
+                  '("\\(\\([0-9][0-9][0-9][0-9]\\)[ \_\-]\\([0-1][0-9]\\)[ \_\-]\\([0-3][0-9]\\)\\)"
+                    (dired-move-to-filename) nil (1 my/dired-file-name-maybe-date-face prepend))))
+
+     ;;
+     ;; Files suffixed with `my/dired-file-name-maybe-date-extensions2'
+     ;; plus occurrences of the prefix date in the filename (on the same line)
+     ;; are highlighted with a bolder face.
+     (list (concat "\\(" (concat (funcall #'regexp-opt my/dired-file-name-maybe-date-extensions2) "\\)[*]?$"))
+           1 my/dired-file-name-maybe-date-face2 t)
+     '(eval .
+            (list (concat "\\(" (regexp-opt my/dired-file-name-maybe-date-extensions2)
+                          "\\|#\\)$")
+                  '("\\(\\([0-9][0-9][0-9][0-9]\\)[ \_\-]\\([0-1][0-9]\\)[ \_\-]\\([0-3][0-9]\\)\\)"
+                    (dired-move-to-filename) nil (1 my/dired-file-name-maybe-date-face2 prepend))))
+
+     (list (concat "\\(" (concat (funcall #'regexp-opt my/dired-compressed-extensions) "\\)[*]?$"))
+           '(".+" (dired-move-to-filename) nil (0 my/dired-compressed-file-suffix)))
+     )
+    "Expressions to highlight in Dired mode.")
+
+  (defun my/dired-mode-hook-font-lock ()
+    (setq-local font-lock-defaults
+                '(my/dired-font-lock-keywords t nil nil beginning-of-line))
+    (font-lock-refresh-defaults))
+  (add-hook 'dired-mode-hook #'my/dired-mode-hook-font-lock)
+#+end_src
+
+#+RESULTS: dired-font-lock-defaults
+: Additional expressions to highlight in Dired mode.
 
 ** Initial Dired state
 #+name: dired-mode-hook-setup
