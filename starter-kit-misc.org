@@ -206,6 +206,36 @@ it's possible aspell isn't in your path
             ("english" ,@default))))
 #+end_src
 
+*** ibuffer column customization
+#+BEGIN_SRC emacs-lisp
+  (load-library "ibuffer")
+
+  (setq ibuffer-display-summary nil
+	ibuffer-formats
+      '((mark " "
+	      (name 24 24 :left :elide) ; change: were originally 18s
+	      " " read-only modified
+	      " " (filename-and-process 36 36 :left))))
+
+  (defadvice ibuffer (around ibuffer-point-to-most-recent) ()
+    "Open ibuffer with cursor pointed to most recent buffer name."
+    (let ((recent-buffer-name (buffer-name)))
+      ad-do-it
+      (ibuffer-jump-to-buffer recent-buffer-name)))
+  (ad-activate 'ibuffer)
+
+  (defun my/ibuffer-visit-buffer ()
+    "Visit the buffer on this line."
+    (interactive)
+    (let ((buf (ibuffer-current-buffer t)))
+      (pop-to-buffer buf)))
+
+  (define-key ibuffer-mode-map (kbd "RET")     'my/ibuffer-visit-buffer)
+  (define-key ibuffer-mode-map (kbd "o")       'ibuffer-visit-buffer-other-window-noselect)
+  (define-key ibuffer-mode-map (kbd "C-M-o")   'ibuffer-forward-line)
+  (define-key ibuffer-mode-map (kbd "C-M-S-o") 'ibuffer-backward-line)
+#+END_SRC
+
 ** Hippie expand: at times perhaps too hip
 #+begin_src emacs-lisp
   (when (boundp 'hippie-expand-try-functions-list)
@@ -241,52 +271,54 @@ let them live in the =backup/= directory inside of the starter kit.
   (server-start)
 #+END_SRC
 
-** My key bindings
+** keys-minor-mode-map
+#+NAME keys-minor-mode-map
 #+BEGIN_SRC emacs-lisp
   (defvar my/keys-minor-mode-map (make-keymap) "my/keys-mode keymap.")
-    (define-minor-mode my/keys-minor-mode
-      "A minor mode so that my key settings override any major modes." t " Keys"
-      'my/keys-minor-mode-map)
-    (defadvice load (after give-my-keybindings-priority)
-      "Try to ensure that my keybindings always have priority."
-      (if (not (eq (car (car minor-mode-map-alist)) 'my/keys-minor-mode))
-          (let ((mykeys (assq 'my/keys-minor-mode minor-mode-map-alist)))
-            (assq-delete-all 'my/keys-minor-mode minor-mode-map-alist)
-            (add-to-list 'minor-mode-map-alist mykeys))))
-  (ad-activate 'load)
-  (my/keys-minor-mode t)
-#+END_SRC
-*** SuperCollider
-#+BEGIN_SRC emacs-lisp
-  (define-key my/keys-minor-mode-map (kbd "C-.") 'keyboard-escape-quit)
-#+END_SRC
+  (define-minor-mode my/keys-minor-mode
+    "A minor mode so that my key settings override any major modes." t " Keys"
+    'my/keys-minor-mode-map)
 
-*** Atom Editor
-#+BEGIN_SRC emacs-lisp
-  (define-key my/keys-minor-mode-map (kbd "C-M-o") 'switch-to-next-buffer) ; was `split-line'
+  ;; SuperCollider
+  (define-key my/keys-minor-mode-map (kbd "C-.") 'keyboard-escape-quit)
+
+  (defun my/keys-other-window-prev ()
+    (interactive)
+    (let ((current-prefix-arg '(-1)))
+      (call-interactively 'other-window)))
+
+  (define-key my/keys-minor-mode-map (kbd "C-M-o") ; was `split-line'
+    `(menu-item "" ibuffer-bs-show
+		:filter ,(lambda (cmd)
+			   (unless (derived-mode-p 'ibuffer-mode) cmd))))
+  (advice-add 'ibuffer-bs-show :after #'ibuffer-bs-toggle-all)
+
   (define-key my/keys-minor-mode-map (kbd "M-k")   'kill-this-buffer)
   (define-key my/keys-minor-mode-map (kbd "C-o")   'other-window) ; was `open-line'
-  (define-key my/keys-minor-mode-map (kbd "C-S-o") (lambda () (interactive)
-						     (let ((current-prefix-arg '(-1)))
-						       (call-interactively 'other-window))))
+  (define-key my/keys-minor-mode-map (kbd "C-S-o") 'my/keys-other-window-prev)
   (define-key my/keys-minor-mode-map (kbd "C-M-d") 'kill-line)
   (define-key my/keys-minor-mode-map (kbd "C-z")   'undo)
   (define-key my/keys-minor-mode-map (kbd "M--")   'completion-at-point) ; "M-/" @ us-en-layout
+
+  (add-to-list 'minor-mode-overriding-map-alist
+	       (cons 'my/keys-minor-mode my/keys-minor-mode-map))
+  (my/keys-minor-mode t)
 #+END_SRC
-*** Recenter-Top-Bottom
+
+** Recenter-Top-Bottom
 #+BEGIN_SRC emacs-lisp
   (define-key my/keys-minor-mode-map (kbd "M-j") 'recenter-top-bottom) ; was `comment-indent-new-line'
   (define-key my/keys-minor-mode-map (kbd "M-j") #'hydra-move/recenter-top-bottom)
 #+END_SRC
 
-*** Expand-region
+** Expand-region
 #+BEGIN_SRC emacs-lisp
   (starter-kit-install-if-needed 'expand-region)
   (define-key my/keys-minor-mode-map (kbd "M-SPC")   'er/expand-region)  ;; was `mark-paragraph'
   (define-key my/keys-minor-mode-map (kbd "M-S-SPC") 'er/contract-region)
 #+END_SRC
 
-*** Multiple-cursors
+** Multiple-cursors
 #+BEGIN_SRC emacs-lisp
   (starter-kit-install-if-needed 'multiple-cursors)
   (load-library "multiple-cursors")
@@ -328,10 +360,15 @@ description of package using describe-package.
 ** popwin-mode
 Use Popup windows for  help, browse-kill-ring
 
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_SRC emacs-lisp
   (starter-kit-install-if-needed 'popwin)
   (require 'popwin)
   (popwin-mode 1)
+
+  (setq popwin:special-display-config '(("*Ibuffer-bs*")))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle no
   ;; Built-in modes
   (push '("*Completions*" :noselect t) popwin:special-display-config)
   (push '("*Messages*" :noselect t :height 30) popwin:special-display-config)

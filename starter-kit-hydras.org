@@ -404,55 +404,79 @@ topdir: %(eval dired-directory)
   (add-hook 'dired-mode-hook #'my/hydra-dired-mode-keys)
 #+end_src
 
-*** IBuffer
+*** Ibuffer
 #+begin_src emacs-lisp
-(defhydra hydra-ibuffer-main (:hint nil :color teal)
+  (load-library "ibuffer")
+  (defvar ibuffer-mode-map)
+
+  (declare-function ibuffer-mark-forward "ibuffer")
+  (defhydra my/hydra-ibuffer-marked-items (ibuffer-mode-map "")
+    "
+\* [%(length (ibuffer-get-marked-buffers)) buffers]: "
+    ("m" ibuffer-mark-forward               "mark")
+    ("<backspace>" ibuffer-unmark-backward  "unmark back")
+    ("u" ibuffer-unmark-forward             "unmark")
+    ("t" ibuffer-toggle-marks               "toggle")
+    ("j" ibuffer-forward-next-marked        "next")
+    ("k" ibuffer-backwards-next-marked      "prev")
+    ("*" my/hydra-ibuffer-mark-special/body "mark special" :color teal)
+    ("U" ibuffer-unmark-all                 "unmark all" :color blue)
+    ("q" nil                                "quit" :color blue))
+
+  (defhydra my/hydra-ibuffer-mark-special (:color blue)
+    "mark"
+    ("/" ibuffer-mark-dired-buffers     "dired")
+    ("M" ibuffer-mark-by-mode           "by mode")
+    ("h" ibuffer-mark-help-buffers      "help")
+    ("m" ibuffer-mark-modified-buffers  "modified")
+    ("r" ibuffer-mark-read-only-buffers "read-only")
+    ("s" ibuffer-mark-special-buffers   "special")
+    ("u" ibuffer-mark-unsaved-buffers   "unsaved")
+    ("." ibuffer-mark-old-buffers       "old")
+    ("q"  nil                           "quit"))
+
+(defhydra hydra-ibuffer-main (:hint nil :color blue)
   "
-    Buffer            Actions         Marks            Display          Directory
-  ------------------------------------------------------------------------------------
-    _d_ flag deletion  ^ ^               _m_ mark          _(_ details
-    _x_ expunge        _o_ other window  _u_ unmark        _)_ omit-mode
-    ^ ^                _H_ other frame   _U_ unmark all    ^ ^               ^ ^
-    _w_ copy filename  _M_ chmod         _t_ toggle marks  _g_ revert buf    _+_ mkdir
-    _C_ copy buffer    _O_ occur marked  _*_ mark special  _,_ sort toogle   _=_ diff
-    _R_ rename         ^ ^               ^ ^               _s_ sort special  ^ ^
-    ^ ^                _A_ view marked   _S_ save marked   _/_ filter
-    _T_ read-only      _V_ revert marked _D_ delete marked
+    Buffer             Actions         Marks            Display
+  ---------------------------------------------------------------------------
+    _d_ flag deletion   _/_ filter          _m_ mark            _(_ details
+    _x_ expunge         ^ ^                 _*_ mark special    _)_ omit-mode
+    ^ ^                 ^ ^                 ^ ^                 _,_ sort toogle
+    _w_ copy filename   _Q_ replace marked  _O_ occur marked    _s_ sort special
+    _C_ copy buffer     _I_ regexp marked   _A_ view marked     ^ ^
+    ^ ^                 ^ ^                 _S_ save marked     _H_ other frame
+    ^ ^                 ^ ^                 _V_ revert marked   _o_ other window
+    _!_ shell file      ^ ^                 _D_ delete marked   _g_ revert buf
     "
   ("d" ibuffer-mark-for-delete)
   ("x" ibuffer-do-kill-on-deletion-marks)
   ("w" ibuffer-copy-filename-as-kill)
   ("C" ibuffer-copy-buffername-as-kill)
 
-  ("m" ibuffer-mark-forward)
-  ("u" ibuffer-unmark-forward)
-  ("U" ibuffer-unmark-all)
-  ("t" ibuffer-toggle-marks)
-  ("*" hydra-ibuffer-mark/body :color amaranth)
+  ("!" ibuffer-do-shell-command-file)
 
-  ("D" ibuffer-do-delete)
-  ("S" ibuffer-do-save)
-  ("A" ibuffer-do-view)
-  ("H" ibuffer-do-view-other-frame)
+  ("/" hydra-ibuffer-filter/body :color teal)
+
+  ("Q" ibuffer-do-query-replace)
+  ("I" ibuffer-do-query-replace-regexp)
+  ;; ("N" ibuffer-do-shell-command-pipe-replace "shell-cmd-pipe-replace")
+  ;; ("X" ibuffer-do-shell-command-pipe         "shell-command-pipe")
+
+  ("m" ibuffer-mark-forward)
+  ("*" my/hydra-ibuffer-mark-special/body :color teal)
+
   ("O" ibuffer-do-occur)
-  ("R" ibuffer-do-rename-uniquely)
-  ("T" ibuffer-do-toggle-read-only)
+  ("A" ibuffer-do-view)
+  ("S" ibuffer-do-save)
+  ("D" ibuffer-do-delete)
   ("V" ibuffer-do-revert)
 
-  ("E" ibuffer-do-eval "eval")
-  ("W" ibuffer-do-view-and-eval "view-and-eval")
-  ("!" ibuffer-do-shell-command-file "shell-command-file")
-  ("Q" ibuffer-do-query-replace "query-replace")
-  ("I" ibuffer-do-query-replace-regexp "query-replace-regexp")
-  ("N" ibuffer-do-shell-command-pipe-replace "shell-cmd-pipe-replace")
-  ("X" ibuffer-do-shell-command-pipe "shell-command-pipe")
-
-  ("g" ibuffer-update)
   ("," ibuffer-toggle-sorting-mode)
-  ("s" hydra-ibuffer-sort/body :color amaranth)
-  ("/" hydra-ibuffer-filter/body :color amaranth)
+  ("s" hydra-ibuffer-sort/body :color teal)
 
-  ("o" ibuffer-visit-buffer-other-window)
+  ("H" ibuffer-do-view-other-frame)
+  ("o" ibuffer-visit-buffer-other-window-noselect)
+  ("g" ibuffer-update)
   ("q" nil :color blue))
 
 (defhydra hydra-ibuffer-mark (:color teal :columns 5)
