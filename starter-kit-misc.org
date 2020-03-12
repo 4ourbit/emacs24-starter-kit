@@ -32,20 +32,16 @@ evaluated a theme is activated using the =load-theme= function.
   (set-terminal-coding-system 'utf-8)
   (set-keyboard-coding-system 'utf-8)
   (prefer-coding-system 'utf-8)
-  
-  (setq visible-bell t
-        echo-keystrokes 0.1
-        font-lock-maximum-decoration t
-        inhibit-startup-message t
-        transient-mark-mode t
-        color-theme-is-global t
-        delete-by-moving-to-trash t
-        shift-select-mode nil
-        truncate-partial-width-windows nil
-        uniquify-buffer-name-style 'forward
-        ediff-window-setup-function 'ediff-setup-windows-plain
-        xterm-mouse-mode t
-        save-place-file (concat starter-kit-dir "places"))
+
+  (setq echo-keystrokes 0.1
+	font-lock-maximum-decoration t
+	color-theme-is-global t
+	shift-select-mode nil
+	truncate-partial-width-windows nil
+	uniquify-buffer-name-style 'forward
+	ediff-window-setup-function 'ediff-setup-windows-plain
+	xterm-mouse-mode t
+	save-place-file (concat starter-kit-dir "places"))
 #+end_src
 
 ** Transparently open compressed files
@@ -266,11 +262,6 @@ let them live in the =backup/= directory inside of the starter kit.
 
 
 * Starter Kit Misc Additions
-** Server mode
-#+BEGIN_SRC emacs-lisp
-  (server-start)
-#+END_SRC
-
 ** keys-minor-mode-map
 #+NAME keys-minor-mode-map
 #+BEGIN_SRC emacs-lisp
