@@ -23,6 +23,12 @@ GTD system or tool for reproducible research and literate programming.
 
 For more information on org-mode check out [[http://orgmode.org/worg/][worg]], a large Org-mode wiki
 which is also *implemented using* Org-mode and [[http://git-scm.com/][git]].
+
+** General setup
+#+BEGIN_SRC emacs-lisp
+  (setq org-startup-folded nil)  ;; do not fold on org file visit
+#+END_SRC
+
 ** Set up hooks for clock persistence
 #+BEGIN_SRC emacs-lisp
   (setq org-clock-persist 'history)  ;; running clock is not persisted
