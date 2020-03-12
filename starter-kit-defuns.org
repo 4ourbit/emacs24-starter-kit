@@ -14,6 +14,9 @@ a lambda doesn't already exist in the list.
 
 #+name: starter-kit-hook-functions
 #+begin_src emacs-lisp
+(defvar starter-kit-coding-hook nil
+  "Hook that gets run on activation of any programming mode.")
+
 (defun starter-kit-local-column-number-mode ()
   (make-local-variable 'column-number-mode)
   (column-number-mode t))

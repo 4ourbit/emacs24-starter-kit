@@ -150,9 +150,6 @@ you were probably hoping for when you set ido-everywhere to t).
     '(when (executable-find ispell-program-name)
        (add-hook 'text-mode-hook 'turn-on-flyspell)))
 
-  (defvar starter-kit-coding-hook nil
-    "Hook that gets run on activation of any programming mode.")
-
   (defalias 'yes-or-no-p 'y-or-n-p)
   ;; Seed the random-number generator
   (random t)
