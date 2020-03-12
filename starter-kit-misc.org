@@ -312,12 +312,6 @@ let them live in the =backup/= directory inside of the starter kit.
   (desktop-read)
 #+END_SRC
 
-*** Show battery info in mode-line
-#+BEGIN_SRC emacs-lisp
-  (setq battery-mode-line-format "%b%p%% %t")
-  (display-battery-mode)
-#+END_SRC
-
 ** Undo/Redo
 Undo/redo history is a tree but manipulating this tree is a challenge. With
 undo-tree you can press C-x u and view graphical representation of undo/redo
