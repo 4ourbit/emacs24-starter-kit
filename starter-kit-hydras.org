@@ -124,25 +124,6 @@ Repeatable yank(-pop) command, with an option to switch to a list view using `he
   (global-set-key (kbd "C-y") #'hydra-yank-pop/yank)
 #+end_src
 
-*** Movement
-
-For many Emacs users, basic movement commands are [the most frequently used](http://ergoemacs.org/emacs/command-frequency.html)! Set up a movement group that means we don't need to hold the control key.
-
-#+begin_src emacs-lisp
-  (defhydra hydra-move
-       (:body-pre (next-line))
-       "move"
-       ("j" next-line)
-       ("k" previous-line)
-       ("l" beginning-of-line)
-       ("ö" move-end-of-line)
-       ("SPC" scroll-up-command)
-       ;; Converting M-v to V here by analogy.
-       ("S-SPC" scroll-down-command)
-       ("M-j" recenter-top-bottom))
-  (global-set-key (kbd "M-j") #'hydra-move/recenter-top-bottom)
-#+end_src
-
 *** Goto Line
 
 Enhanced goto-line command:

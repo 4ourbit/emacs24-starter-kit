@@ -287,16 +287,11 @@ let them live in the =backup/= directory inside of the starter kit.
   (define-key my/keys-minor-mode-map (kbd "C-M-d") 'kill-line)
   (define-key my/keys-minor-mode-map (kbd "C-z")   'undo)
   (define-key my/keys-minor-mode-map (kbd "M--")   'completion-at-point) ; "M-/" @ us-en-layout
+  (define-key my/keys-minor-mode-map (kbd "M-j") 'recenter-top-bottom) ; was `comment-indent-new-line'
 
   (add-to-list 'minor-mode-overriding-map-alist
 	       (cons 'my/keys-minor-mode my/keys-minor-mode-map))
   (my/keys-minor-mode t)
-#+END_SRC
-
-** Recenter-Top-Bottom
-#+BEGIN_SRC emacs-lisp
-  (define-key my/keys-minor-mode-map (kbd "M-j") 'recenter-top-bottom) ; was `comment-indent-new-line'
-  (define-key my/keys-minor-mode-map (kbd "M-j") #'hydra-move/recenter-top-bottom)
 #+END_SRC
 
 ** Expand-region
