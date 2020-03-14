@@ -41,66 +41,69 @@ Taken from https://github.com/abo-abo/hydra/wiki/Emacs
 
 *** Zoom
 
-Here's an example Hydra, bound in the global map (you can use any
-keymap in place of `global-map'):
+Make `text-scale-adjust' in [[file:/usr/share/emacs/26.3/lisp/face-remap.el.gz::(defun text-scale-adjust (inc)][face-remap.el]] work on all buffers globally
+by introducing a global minor mode storing the zoom level and by adding
+all hydra key bindings to `global-map'.
 
 #+begin_src emacs-lisp
-  (define-globalized-minor-mode
-    global-text-scale-mode
-    text-scale-mode
+  (define-globalized-minor-mode my/global-text-scale-mode text-scale-mode
     (lambda () (text-scale-mode 1)))
-  (defun global-text-scale-adjust (inc) (interactive)
-	 (text-scale-set 1)
-	 (kill-local-variable 'text-scale-mode-amount)
-	 (setq-default text-scale-mode-amount (+ text-scale-mode-amount inc))
-	 (global-text-scale-mode 1))
-  (defhydra hydra-zoom (global-map "C-x")
-    "zoom"
-    ("C-0" (global-text-scale-mode -1) "reset")
-    ("C-+" (global-text-scale-adjust 1) "in")
-    ("C--" (global-text-scale-adjust -1) "out"))
-#+end_src
 
-It allows to start a command chain either like this:
-"<C-+> ++--++-", or "<f2> lgllg".
+  (defun my/global-text-scale-adjust (inc)
+    (interactive)
+    (text-scale-set 1)
+    (kill-local-variable 'text-scale-mode-amount)
+    (setq-default text-scale-mode-amount (+ text-scale-mode-amount inc))
+    (my/global-text-scale-mode 1))
+
+  (defhydra my/hydra-zoom (global-map "")
+    "zoom"
+    ("C-+" (my/global-text-scale-adjust 1)  "in")
+    ("C--" (my/global-text-scale-adjust -1) "out")
+    ("C-0" (my/global-text-scale-mode -1)   "reset")
+    ("q"   nil                              "quit" :color blue))
+#+end_src
 
 *** Toggle Modes
-Here's another approach, when you just want a "callable keymap":
 
 #+begin_src emacs-lisp
-  (defhydra hydra-toggle ()
-    "toggle"
-    ("a" abbrev-mode "abbrev")
-    ("d" toggle-debug-on-error "debug")
-    ("f" auto-fill-mode "fill")
-    ("l" linum-mode "linum")
-    ("t" toggle-truncate-lines "truncate")
-    ("w" whitespace-mode "whitespace")
-    ("z" hydra-zoom/body "zoom" :color amaranth)
-    ("q" nil :color blue))
-#+end_src
+  (defun my/toggle-text-mode-truncate-lines ()
+    "Toggle whether to use Truncate Lines in Text mode and related modes.
+  This command affects all buffers that use modes related to Text mode,
+  both existing buffers and buffers that you subsequently create."
+    (interactive)
+    (let ((enable-mode (not truncate-lines)))
+      (setq-default truncate-lines enable-mode)
+      (dolist (buffer (buffer-list))
+        (with-current-buffer buffer
+          (toggle-truncate-lines (if enable-mode 1 0))))
+      (message "Truncate long lines %s in all buffers "
+               (if enable-mode "enabled" "disabled"))))
 
-This binds nothing so far, but if you follow up with:
+  (defhydra hydra-toggle (global-map "M-m" :color red :hint none)
+    "
+[_T_]/[_t_]: ?t? truncate,
+[_W_]/[_w_]: ?w? whitespace,
+[_F_]/[_f_]: ?f? fill (fill-column: %(current-fill-column)),
+[_L_]/[_l_]: ?l? linum,
+[_z_]: zoom, [_q_]: quit."
+    ("T" my/toggle-text-mode-truncate-lines)
+    ("t" toggle-truncate-lines
+      (if truncate-lines "[x]" "[ ]"))
+    ("W" whitespace-mode)
+    ("w" whitespace-mode
+      (if (bound-and-true-p whitespace-mode) "[x]" "[ ]"))
+    ("F" toggle-text-mode-auto-fill)
+    ("f" auto-fill-mode
+      (if (bound-and-true-p auto-fill-function) "[x]" "[ ]"))
+    ("L" linum-mode)
+    ("l" linum-mode
+      (if (bound-and-true-p linum-mode) "[x]" "[ ]"))
+    ("z" hydra-zoom/body       :color teal)
+    ("q" nil                   :color blue))
 
-#+begin_src emacs-lisp
   (global-set-key (kbd "M-m") 'hydra-toggle/body)
-  (define-key my/keys-minor-mode-map (kbd "M-m") 'hydra-toggle/body) ; was `back-to-indentation'
 #+end_src
-
-you will have bound "M-m a", "M-m d" etc.
-
-Knowing that `defhydra' defines e.g. `hydra-toggle/body' command,
-you can nest Hydras if you wish, with `hydra-toggle/body' possibly
-becoming a blue head of another Hydra.
-
-If you want to learn all intricacies of using `defhydra' without
-having to figure it all out from this source code, check out the
-wiki: https://github.com/abo-abo/hydra/wiki. There's a wealth of
-information there. Everyone is welcome to bring the existing pages
-up to date and add new ones.
-
-Additionally, the file hydra-examples.el serves to demo most of the
-functionality.
 
 *** Yank
 
