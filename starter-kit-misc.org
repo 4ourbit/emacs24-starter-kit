@@ -340,32 +340,4 @@ description of package using describe-package.
   (global-undo-tree-mode)
 #+END_SRC
 
-** popwin-mode
-Use Popup windows for  help, browse-kill-ring
 
-#+BEGIN_SRC emacs-lisp
-  (starter-kit-install-if-needed 'popwin)
-  (require 'popwin)
-  (popwin-mode 1)
-
-  (setq popwin:special-display-config '(("*Ibuffer-bs*")))
-#+END_SRC
-
-#+BEGIN_SRC emacs-lisp :tangle no
-  ;; Built-in modes
-  (push '("*Completions*" :noselect t) popwin:special-display-config)
-  (push '("*Messages*" :noselect t :height 30) popwin:special-display-config)
-  (push '("*Apropos*" :noselect t :height 30) popwin:special-display-config)
-  (push '(Custom-mode) popwin:special-display-config)
-  (push '(Info-mode) popwin:special-display-config)
-  (push '(Calendar-mode) popwin:special-display-config)
-  (push '(help-mode) popwin:special-display-config)
-  ;; browse-kill-ring
-  (push "*Kill Ring*" popwin:special-display-config)
-  ;; Magit
-  ;; [[https://github.com/magit/transient/issues/34][Conflict between Magit transient commands and popwin]]
-  (push '("*magit-commit*" :stick t) popwin:special-display-config)
-  (push "*magit-diff*" popwin:special-display-config)
-  (push "*magit-process*" popwin:special-display-config)
-  (push "*magit-edit-log*" popwin:special-display-config)
-#+END_SRC
