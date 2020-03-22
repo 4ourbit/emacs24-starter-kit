@@ -8,13 +8,14 @@ This is part of the [[file:starter-kit.org][Emacs Starter Kit]].
 Key Bindings.
 
 ** You know, like Readline.
-#+begin_src emacs-lisp 
+#+begin_src emacs-lisp
 (global-set-key (kbd "C-M-h") 'backward-kill-word)
+(global-set-key (kbd "M-d") 'kill-word) ; already standard
 #+end_src
 
-** Align your code in a pretty way.
-#+begin_src emacs-lisp 
-(global-set-key (kbd "C-x \\") 'align-regexp)
+** Kill line
+#+begin_src emacs-lisp
+(global-set-key (kbd "C-M-d") 'kill-line) ; was: down-list
 #+end_src
 
 ** Completion that uses many different methods to find options.
@@ -43,23 +44,8 @@ Key Bindings.
 
 ** File finding
 #+begin_src emacs-lisp
-  (global-set-key (kbd "C-x C-p") 'find-file-at-point)
-  (global-set-key (kbd "C-c y")   'bury-buffer)
-  (global-set-key (kbd "C-c r")   'revert-buffer)
   (global-set-key (kbd "M-`")     'file-cache-minibuffer-complete)
   (global-set-key (kbd "C-x C-b") 'ibuffer)
-#+end_src
-
-** Window switching. (C-x o goes to the next window)
-#+begin_src emacs-lisp 
-(windmove-default-keybindings) ;; Shift+direction
-(global-set-key (kbd "C-x O") (lambda () (interactive) (other-window -1))) ;; back one
-(global-set-key (kbd "C-x C-o") (lambda () (interactive) (other-window 2))) ;; forward two
-#+end_src
-
-** Indentation help
-#+begin_src emacs-lisp 
-(global-set-key (kbd "C-x ^") 'join-line)
 #+end_src
 
 ** If you want to be able to M-x without meta
@@ -80,21 +66,6 @@ Key Bindings.
         (occur (if isearch-regexp
                    isearch-string
                  (regexp-quote isearch-string))))))
-#+end_src
-
-** Org-mode
-Two global binding for Org-mode (see [[file:starter-kit-org.org][starter-kit-org]])
-
-The [[http://orgmode.org/manual/Agenda-Views.html#Agenda-Views][Org-mode agenda]] is good to have close at hand
-#+begin_src emacs-lisp
-  (define-key global-map "\C-ca" 'org-agenda)
-#+end_src
-
-Org-mode supports [[http://orgmode.org/manual/Hyperlinks.html#Hyperlinks][links]], this command allows you to store links
-globally for later insertion into an Org-mode buffer.  See
-[[http://orgmode.org/manual/Handling-links.html#Handling-links][Handling-links]] in the Org-mode manual.
-#+begin_src emacs-lisp
-  (define-key global-map "\C-cl" 'org-store-link)
 #+end_src
 
 ** Rgrep

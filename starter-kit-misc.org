@@ -196,27 +196,38 @@ let them live in the =backup/= directory inside of the starter kit.
   ;; SuperCollider
   (define-key my/keys-minor-mode-map (kbd "C-.") 'keyboard-escape-quit)
 
+  ;; Cycle buffers in current window with ibuffer-bs. Also once in selection
+  ;; buffer pass through repeated C-M-o. Note that "C-M-S-o" is bound to
+  ;; reverse cycling in ibuffer-mode (ivy: minibuffer-i-mode) in its major
+  ;; mode key map.
+  (define-key my/keys-minor-mode-map (kbd "C-M-o") ; was `split-line'
+    `(menu-item "" ibuffer-bs-show
+                :filter ,(lambda (cmd)
+                           (unless (derived-mode-p
+                                    'minibuffer-inactive-mode
+                                    'ibuffer-mode) cmd))))
+  (advice-add 'ibuffer-bs-show :after #'ibuffer-bs-toggle-all)
+
+  (define-key my/keys-minor-mode-map (kbd "C-o") 'other-window) ; was `open-line'
   (defun my/keys-other-window-prev ()
     (interactive)
     (let ((current-prefix-arg '(-1)))
       (call-interactively 'other-window)))
+  (define-key my/keys-minor-mode-map (kbd "C-S-o") 'my/keys-other-window-prev)
 
-  (define-key my/keys-minor-mode-map (kbd "C-M-o") ; was `split-line'
-    `(menu-item "" ibuffer-bs-show
-		:filter ,(lambda (cmd)
-			   (unless (derived-mode-p 'ibuffer-mode) cmd))))
-  (advice-add 'ibuffer-bs-show :after #'ibuffer-bs-toggle-all)
+  (define-key my/keys-minor-mode-map (kbd "C-u C-o")
+    `(menu-item "" window-swap-states
+                :filter ,(lambda (cmd)
+                           (unless (derived-mode-p 'minibuffer-inactive-mode) cmd))))
 
   (define-key my/keys-minor-mode-map (kbd "M-k")   'kill-this-buffer)
-  (define-key my/keys-minor-mode-map (kbd "C-o")   'other-window) ; was `open-line'
-  (define-key my/keys-minor-mode-map (kbd "C-S-o") 'my/keys-other-window-prev)
-  (define-key my/keys-minor-mode-map (kbd "C-M-d") 'kill-line)
+  (define-key my/keys-minor-mode-map (kbd "M-K")   'kill-buffer-and-window)
   (define-key my/keys-minor-mode-map (kbd "C-z")   'undo)
   (define-key my/keys-minor-mode-map (kbd "M--")   'completion-at-point) ; "M-/" @ us-en-layout
-  (define-key my/keys-minor-mode-map (kbd "M-j") 'recenter-top-bottom) ; was `comment-indent-new-line'
+  (define-key my/keys-minor-mode-map (kbd "M-j")   'recenter-top-bottom) ; was `comment-indent-new-line'
 
   (add-to-list 'minor-mode-overriding-map-alist
-	       (cons 'my/keys-minor-mode my/keys-minor-mode-map))
+               (cons 'my/keys-minor-mode my/keys-minor-mode-map))
   (my/keys-minor-mode t)
 #+END_SRC
 

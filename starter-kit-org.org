@@ -48,10 +48,21 @@ Assume Emacs is running when work is clockable. Clock out before killing Emacs.
       t)) ;; only fails on keyboard quit or error
   (add-hook 'kill-emacs-query-functions 'my/org-query-clock-out)
 #+END_SRC
+
 ** Org-Mode Hook -- Keybindings
-   :PROPERTIES:
-   :CUSTOM_ID: keybindings
-   :END:
+The [[http://orgmode.org/manual/Agenda-Views.html#Agenda-Views][Org-mode agenda]] is good to have close at hand
+#+begin_src emacs-lisp
+  (define-key global-map "\C-cc" 'org-capture)
+  (define-key global-map "\C-ca" 'org-todo-list)
+#+end_src
+
+Org-mode supports [[http://orgmode.org/manual/Hyperlinks.html#Hyperlinks][links]], this command allows you to store links
+globally for later insertion into an Org-mode buffer.
+See [[http://orgmode.org/manual/Handling-links.html#Handling-links][Handling-links]] in the Org-mode manual.
+#+begin_src emacs-lisp
+  (define-key global-map "\C-cl" 'org-store-link)
+#+end_src
+
 #+begin_src emacs-lisp
   (defun my/org-mode-keys ()
     "my keys for `org-mode'."
