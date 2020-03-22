@@ -140,8 +140,6 @@ you were probably hoping for when you set ido-everywhere to t).
 
 ** Other, spell checking, tabs, imenu and a coding hook
 #+begin_src emacs-lisp 
-  ;; use ethan-wspace to decide when inserting tabs or spaces
-  ;; (set-default 'indent-tabs-mode nil)
   (set-default 'indicate-empty-lines t)
   (set-default 'imenu-auto-rescan t)
 
@@ -153,25 +151,6 @@ you were probably hoping for when you set ido-everywhere to t).
   (defalias 'yes-or-no-p 'y-or-n-p)
   ;; Seed the random-number generator
   (random t)
-#+end_src
-
-*** ethan-wspace
-Obsoletes `mode-require-final-newlines' or `show-trailing-whitespace'
-
-#+BEGIN_SRC emacs-lisp :tangle no
-  (starter-kit-install-if-needed 'ethan-wspace)
-  (setq mode-require-final-newline nil)
-  (global-ethan-wspace-mode t)
-#+END_SRC
-
-*** functions for prettier source code
-#+begin_src emacs-lisp
-(defun starter-kit-pretty-lambdas ()
-  (font-lock-add-keywords
-   nil `(("(\\(lambda\\>\\)"
-          (0 (progn (compose-region (match-beginning 1) (match-end 1)
-                                    ,(make-char 'greek-iso8859-7 107))
-                    nil))))))
 #+end_src
 
 *** possible issues/resolutions with flyspell
@@ -306,6 +285,25 @@ let them live in the =backup/= directory inside of the starter kit.
   (starter-kit-install-if-needed 'multiple-cursors)
   (load-library "multiple-cursors")
   (define-key my/keys-minor-mode-map (kbd "C-M-SPC") 'mc/mark-next-like-this) ; was `mark-sexp'
+#+END_SRC
+
+** Ethan-Wspace
+Obsoletes `mode-require-final-newlines' or `show-trailing-whitespace'.
+
+Also decides when inserting tabs or spaces, so it may conflict with `indent-tabs-mode'.
+
+You should also remove any customizations you have made to turn on
+either ``show-trailing-whitespace`` or ``require-final-newline``; we
+handle those for you. (But note that ``require-final-newline`` is
+turned on by some modes based on the value of
+``mode-require-final-newline``, so you may have to turn that off.)
+
+#+BEGIN_SRC emacs-lisp
+  (setq mode-require-final-newline nil)
+
+  (starter-kit-install-if-needed 'ethan-wspace)
+  (require 'ethan-wspace)
+  (global-ethan-wspace-mode t)
 #+END_SRC
 
 ** Toggle  Useful Emacs Modes
