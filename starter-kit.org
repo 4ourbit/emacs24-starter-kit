@@ -365,11 +365,6 @@ The following files contain the remainder of the core of the Emacs
 Starter Kit.  All of the code in this section should be loaded by
 everyone using the starter kit.
 
-- Starter kit function definitions in [[file:starter-kit-defuns.org][starter-kit-defuns]]
-  #+begin_src emacs-lisp
-  (starter-kit-load "starter-kit-defuns.org")
-  #+end_src
-
 - Key Bindings in [[file:starter-kit-bindings.org][starter-kit-bindings]]
   #+begin_src emacs-lisp
   (starter-kit-load "starter-kit-bindings.org")

@@ -5,7 +5,6 @@ BATCH=$(EMACS) --batch -Q --eval '(require (quote org))' --eval '(setq starter-k
 
 FILES = starter-kit.org			\
 	starter-kit-bindings.org	\
-	starter-kit-defuns.org		\
 	starter-kit-misc.org		\
 	starter-kit-registers.org
 

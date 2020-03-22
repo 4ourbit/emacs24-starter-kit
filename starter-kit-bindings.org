@@ -42,14 +42,25 @@ Key Bindings.
 #+end_src
 
 ** File finding
-#+begin_src emacs-lisp 
+#+begin_src emacs-lisp
+  (defun my/recentf-ido-find-file ()
+    "Find a recent file using Ido."
+    (interactive)
+    (let* ((file-assoc-list (mapcar (lambda (x)
+				      (cons (file-name-nondirectory x) x))
+				    recentf-list))
+	   (filename-list (remove-duplicates (mapcar #'car file-assoc-list) :test #'string=))
+	   (filename (ido-completing-read "Choose recent file: " filename-list nil t)))
+      (when filename
+	(find-file (cdr (assoc filename file-assoc-list))))))
+
   (global-set-key (kbd "C-x M-f") 'ido-find-file-other-window)
   (global-set-key (kbd "C-x C-p") 'find-file-at-point)
-  (global-set-key (kbd "C-c y") 'bury-buffer)
-  (global-set-key (kbd "C-c r") 'revert-buffer)
-  (global-set-key (kbd "M-`") 'file-cache-minibuffer-complete)
+  (global-set-key (kbd "C-c y")   'bury-buffer)
+  (global-set-key (kbd "C-c r")   'revert-buffer)
+  (global-set-key (kbd "M-`")     'file-cache-minibuffer-complete)
   (global-set-key (kbd "C-x C-b") 'ibuffer)
-  (global-set-key (kbd "C-x f") 'recentf-ido-find-file)  
+  (global-set-key (kbd "C-x f")   'my/recentf-ido-find-file)
 #+end_src
 
 ** Window switching. (C-x o goes to the next window)
