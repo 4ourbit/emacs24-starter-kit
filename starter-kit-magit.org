@@ -32,12 +32,3 @@ Taken from https://github.com/abo-abo/hydra/wiki/Emacs
           (define-key magit-mode-map (kbd "C-j") 'magit-goto-next-section)
           (define-key magit-mode-map (kbd "C-k") 'magit-goto-previous-section)))
 #+end_src
-
-** Built-in ido support
-Taken from https://github.com/DarwinAwardWinner/ido-completing-read-plus#packages-with-built-in-ido-support
-
-#+begin_src emacs-lisp
-  (setq magit-completing-read-function 'magit-ido-completing-read)
-#+end_src
-
-

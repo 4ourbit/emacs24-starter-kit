@@ -395,6 +395,11 @@ everyone using the starter kit.
     (starter-kit-load "starter-kit-magit.org")
   #+end_src
 
+- Interactively do things with buffers and files in [[file:starter-kit-ido.org][starter-kit-ido]]
+  #+begin_src emacs-lisp
+    (starter-kit-load "starter-kit-ido.org")
+  #+end_src
+
 ** Load User/System Specific Files
 *** System/User specific customizations
 You can keep system- or user-specific customizations here in either

@@ -1,0 +1,88 @@
+#+TITLE: Starter Kit Ido
+#+OPTIONS: toc:nil num:nil ^:nil
+
+This is part of the [[file:starter-kit.org][Emacs Starter Kit]].
+
+* Starter Kit Ido
+
+Interactively do things: ido-mode is like magic pixie dust!
+
+** Starter Kit loves ido-mode
+#+begin_src emacs-lisp
+  (ido-mode 'both)
+  (setq ido-enable-prefix nil
+        ido-enable-flex-matching t
+        ido-create-new-buffer 'always
+        ido-use-filename-at-point t
+        ido-max-prospects 8
+        ido-max-work-file-list 50
+        ido-unc-hosts (quote ido-unc-hosts-net-view)
+        ido-use-virtual-buffers t
+        ido-decorations (quote ("
+  ▶ " "" "
+    " "
+    ..." "  ▶ " "" "
+  ✗[No match]" "
+  ✓ [Matched]" "
+  ✗[Not readable]" "
+  ✗[Too big]" "
+  ↵ [Confirm]")))
+#+end_src
+
+** File finding
+#+begin_src emacs-lisp
+  (defun my/recentf-ido-find-file ()
+    "Find a recent file using Ido."
+    (interactive)
+    (let* ((file-assoc-list (mapcar (lambda (x)
+				      (cons (file-name-nondirectory x) x))
+				    recentf-list))
+	   (filename-list (remove-duplicates (mapcar #'car file-assoc-list) :test #'string=))
+	   (filename (ido-completing-read "Choose recent file: " filename-list nil t)))
+      (when filename
+	(find-file (cdr (assoc filename file-assoc-list))))))
+
+  (global-set-key (kbd "C-x f")   'my/recentf-ido-find-file)
+#+end_src
+
+** Fuzzier ido
+- Swaps the default ido flex matching with the more powerful [[https://github.com/lewang/flx][ido-flx]].
+#+srcname: starter-kit-flx-ido
+#+begin_src emacs-lisp
+  (starter-kit-install-if-needed 'flx-ido)
+  (flx-ido-mode t)
+#+end_src
+
+** Use ido-completing-read+ (formerly: ido-ubiquitous)
+This package replaces stock emacs completion with ido completion
+wherever it is possible to do so without breaking things (i.e. what
+you were probably hoping for when you set ido-everywhere to t).
+
+#+srcname: starter-kit-ido-completing-read+
+#+begin_src emacs-lisp
+  (ido-everywhere 1)
+  (starter-kit-install-if-needed 'ido-completing-read+)
+
+  (require 'ido-completing-read+)
+  (ido-ubiquitous-mode 1)
+
+  ;; (setq ido-ubiquitous-command-overrides
+  ;;   '(;; Disable, when installing smex
+  ;;     (enable exact "execute-extended-command")
+  ;;     (enable prefix "wl-")
+  ;;     (enable-old prefix "Info-")
+  ;;     (enable exact "webjump")
+  ;;     ;; https://github.com/DarwinAwardWinner/ido-ubiquitous/issues/28
+  ;;     (enable regexp "\\`\\(find\\|load\\|locate\\)-library\\'")
+  ;;     ;; https://github.com/DarwinAwardWinner/ido-ubiquitous/issues/37
+  ;;     ;; Org and Magit already support ido natively, see above
+  ;;     ;; (disable prefix "org-")
+  ;;     (disable prefix "magit-")))
+#+end_src
+
+** Magit built-in ido support
+Taken from https://github.com/DarwinAwardWinner/ido-completing-read-plus#packages-with-built-in-ido-support
+
+#+begin_src emacs-lisp
+  (setq magit-completing-read-function 'magit-ido-completing-read)
+#+end_src
