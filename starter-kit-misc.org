@@ -21,14 +21,17 @@ evaluated a theme is activated using the =load-theme= function.
 
 ** Window systems
 #+srcname: starter-kit-window-view-stuff
-#+begin_src emacs-lisp 
+#+begin_src emacs-lisp
   (when window-system
     (setq frame-title-format '(buffer-file-name "%f" ("%b")))
     (setq blink-cursor-interval 0.5)
+    ;; Split only into top and botton if a window is the only window on its
+    ;; frame, or all the other ones are dedicated,
+    (setq split-height-threshold nil)
     (set-default 'cursor-type 'box)
     (blink-cursor-mode 1)
     (when (require 'mwheel nil 'no-error) (mouse-wheel-mode t)))
-  
+
   (set-terminal-coding-system 'utf-8)
   (set-keyboard-coding-system 'utf-8)
   (prefer-coding-system 'utf-8)
