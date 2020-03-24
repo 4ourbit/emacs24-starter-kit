@@ -396,8 +396,13 @@ everyone using the starter kit.
   #+end_src
 
 - Interactively do things with buffers and files in [[file:starter-kit-ido.org][starter-kit-ido]]
-  #+begin_src emacs-lisp
+  #+begin_src emacs-lisp :tangle no
     (starter-kit-load "starter-kit-ido.org")
+  #+end_src
+
+- Ivy, a generic completion frontend for Emacs in [[file:starter-kit-ivy.org][starter-kit-ivy]]
+  #+begin_src emacs-lisp
+    (starter-kit-load "starter-kit-ivy.org")
   #+end_src
 
 ** Load User/System Specific Files

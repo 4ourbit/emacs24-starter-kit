@@ -1,0 +1,296 @@
+#+TITLE: Starter Kit Ivy
+#+OPTIONS: toc:nil num:nil ^:nil
+
+This is part of the [[file:starter-kit.org][Emacs Starter Kit]].
+
+* Starter Kit Ivy
+
+** Basic settings
+#+begin_src emacs-lisp
+  ;; completion displays e.g. in shell-mode
+  (starter-kit-install-if-needed 'ivy)
+  (ivy-mode t)
+#+end_src
+
+** Ivy
+
+*** Ivy Minibuffer General
+#+begin_src emacs-lisp
+  (defun my/ivy-previous-line-or-reverse-i-search (arg)
+    "Move cursor vertically up ARG lines, or to the previous history element.
+  When point moves over the top line of multi-line minibuffer, calls
+  `ivy-reverse-i-search'."
+    (interactive "p")
+    (when (zerop ivy--index)
+      (ivy-reverse-i-search))
+    (ivy-previous-line arg))
+
+  (defun my/ivy-previous-line-or-history-element (arg)
+    "Move cursor vertically up ARG lines, or to the previous history element.
+  When point moves over the top line of multi-line minibuffer, puts ARGth
+  previous element of the minibuffer history in the minibuffer."
+    (interactive "p")
+    (when (zerop ivy--index)
+      (ivy-previous-history-element 1))
+    (ivy-previous-line arg))
+
+  (defun my/ivy-next-line-or-history-element (arg)
+  "Move cursor vertically down ARG candidates.
+  When point moves below the last line of multi-line minibuffer, puts ARGth
+  next element of the minibuffer history in the minibuffer."
+    (interactive "p")
+    (when (>= (1+ ivy--index) (length ivy--old-cands))
+      (ivy-next-history-element 1))
+    (ivy-next-line arg))
+
+  ;; Also useful in `dired-dwim-target' to switch to current window with <down>
+  ;; on the last entry in the `ivy-find-file' selector.
+  (define-key ivy-minibuffer-map (kbd "<up>")   'my/ivy-previous-line-or-history-element)
+  (define-key ivy-minibuffer-map (kbd "<down>") 'my/ivy-next-line-or-history-element)
+  (define-key ivy-minibuffer-map (kbd "C-r")    'my/ivy-previous-line-or-reverse-i-search)
+  (define-key ivy-minibuffer-map (kbd "C-s")    'my/ivy-next-line-or-history-element)
+  (define-key ivy-minibuffer-map (kbd "C-f")    'ivy-immediate-done)
+  (define-key ivy-minibuffer-map (kbd "C-o")    'ivy-occur)
+  (define-key ivy-minibuffer-map (kbd "?")      'hydra-ivy/body)
+#+end_src
+
+*** Ivy Minibuffer Avy
+[[https://github.com/abo-abo/avy][avy]] is supported out-of-the-box.
+
+#+begin_src emacs-lisp
+  (define-key ivy-minibuffer-map (kbd "C-ä") 'ivy-avy)
+  ;; Where C-' (pre-set in `ivy-avy') is located at on de-de keyboard.
+#+end_src
+
+*** Ivy I-search
+#+begin_src emacs-lisp
+  (defun my/ivy-i-search-previous-line (arg)
+    "Move cursor vertically up ARG lines.
+  When point moves over the top line of multi-line minibuffer and there is no
+  input text content in the minibuffer, it aborts recursive edit.
+  When point moves over the top line of multi-line minibuffer and there is
+  input text content, it clears the content."
+    (interactive "p")
+    (when (and (zerop ivy--index))
+      (if (string= "" ivy-text)
+	  (minibuffer-keyboard-quit)
+	(delete-minibuffer-contents)))
+    (ivy-previous-line arg))
+
+  (define-key ivy-reverse-i-search-map (kbd "<up>")   'ivy-previous-line)
+  (define-key ivy-reverse-i-search-map (kbd "<down>") 'ivy-next-line)
+  (define-key ivy-reverse-i-search-map (kbd "C-r")    'my/ivy-i-search-previous-line)
+  (define-key ivy-reverse-i-search-map (kbd "C-s")    'ivy-next-line)
+  (define-key ivy-reverse-i-search-map (kbd "C-M-d")  'ivy-reverse-i-search-kill)
+#+end_src
+
+** Counsel
+Enable `counsel-M-x' and other commands as defined in [[file:/usr/share/emacs/site-lisp/elpa/counsel-0.12.0/counsel.el::;;* `counsel-mode' (defvar counsel-mode-map][counsel-mode-map]].
+
+#+begin_src emacs-lisp
+  (starter-kit-install-if-needed 'counsel)
+  (counsel-mode t)
+#+end_src
+
+*** Follow directories in counsel-find-file
+This is instead of opening them in dired, much the same like ido does.
+
+#+begin_src emacs-lisp
+  (define-key counsel-find-file-map (kbd "RET") 'ivy-alt-done)
+#+end_src
+
+*** my/counsel-switch-buffer (replaces ibuffer-bs)
+#+begin_src emacs-lisp
+  (define-key ivy-switch-buffer-map (kbd "C-M-o")   'ivy-next-line)
+  (define-key ivy-switch-buffer-map (kbd "C-M-S-o") 'ivy-previous-line)
+  (define-key ivy-switch-buffer-map (kbd "C-M-d")   'ivy-switch-buffer-kill)
+
+  (defun my/counsel-switch-buffer ()
+    "Switch to another buffer.
+  Display a preview of the selected ivy completion candidate buffer
+  in the current window.
+    This is a duplicate of `counsel-switch-buffer' but for `ivy-read'
+  we set current buffer as :preselect argument. Also we share buffer
+  history with ido by setting `ido-buffer-history' as :history
+  argument."
+  (interactive)
+  (ivy-read "Switch to buffer: " 'internal-complete-buffer
+	    :preselect (buffer-name (current-buffer)) ; was: (buffer-name (other-buffer (current-buffer)))
+	    :history 'ido-buffer-history ; was: nil
+	    :keymap ivy-switch-buffer-map
+	    :action #'ivy--switch-buffer-action
+	    :matcher #'ivy--switch-buffer-matcher
+	    :caller 'counsel-switch-buffer
+	    :unwind #'counsel--switch-buffer-unwind
+	    :update-fn 'counsel--switch-buffer-update-fn))
+  (advice-add 'ibuffer-bs-show :override 'my/counsel-switch-buffer)
+#+end_src
+
+*** my/counsel-enter-magit-status for files and buffers
+#+begin_src emacs-lisp
+  (defun my/counsel-enter-magit-status ()
+    "Visit the directory contaning the current FILE in Magit."
+    (interactive)
+    (ivy-exit-with-action
+     #'(lambda (str)
+	 (let* ((file (expand-file-name str))
+		(default-directory (file-name-directory file))
+		(magit-status-goto-file-position t)) ;; magit >=3.0.0: magit-status-here
+	   (magit-status-internal default-directory)))))
+
+  (define-key ivy-switch-buffer-map (kbd "C-x g")   'my/counsel-enter-magit-status)
+  (define-key counsel-find-file-map (kbd "C-x g")   'my/counsel-enter-magit-status)
+#+end_src
+
+*** my/counsel-dired-jump for files and buffers
+#+begin_src emacs-lisp
+  (defun my/counsel-dired-jump ()
+    "Visit the directory contaning the current FILE in Dired."
+    (interactive)
+    (let ((input (ivy--input)))
+	(ivy-quit-and-run
+	   (let ((default-directory (or ivy--directory default-directory))
+		 (current (ivy-state-current ivy-last)))
+	     (dired-jump nil dir)))))
+
+  (define-key ivy-switch-buffer-map (kbd "C-x C-j") 'my/counsel-dired-jump)
+  (define-key counsel-find-file-map (kbd "C-x C-j") 'my/counsel-dired-jump)
+#+end_src
+
+*** counsel-org-capture
+#+begin_src emacs-lisp
+  (advice-add 'org-capture :override 'counsel-org-capture)
+#+end_src
+
+*** counsel-shell-history
+#+begin_src emacs-lisp
+  (with-eval-after-load "shell"
+    (define-key shell-mode-map (kbd "C-r") 'counsel-shell-history))
+#+end_src
+
+** Flx
+Use flx package to fuzzy match everywhere except in swiper.
+#+begin_src emacs-lisp
+  (setq ivy-action-wrap t
+	ivy-use-virtual-buffers t
+	ivy-re-builders-alist
+	'((swiper . ivy--regex-plus)
+	  (t      . ivy--regex-fuzzy)))
+#+end_src
+
+** Ivy-posframe
+#+begin_src emacs-lisp
+  ;; ivy completion in posframe
+  (starter-kit-install-if-needed 'posframe)
+  (load-library "ivy-posframe")
+  (ivy-posframe-mode t)
+
+  (defun my/ivy-posframe-get-size ()
+    "The default function used by `ivy-posframe-size-function'."
+    (list
+     :height ivy-posframe-height
+     :width ivy-posframe-width
+     :min-height (or ivy-posframe-min-height
+		     (let ((height (+ ivy-height 1)))
+		       (min height (or ivy-posframe-height height))))
+     :min-width (or ivy-posframe-min-width
+		    (let ((width (round (* (frame-width) 0.24))))
+		      (min width (or ivy-posframe-width width))))))
+  (setq ivy-posframe-size-function #'my/ivy-posframe-get-size
+	ivy-posframe-height 20
+	ivy-posframe-min-width (+ 48 1) ;; entry + 1 avy
+	ivy-posframe-display-functions-alist
+	'((t . ivy-posframe-display-at-frame-center)))
+#+end_src
+
+** Additional hydra key bindings
+This package provides the `hydra-ivy/body' command, which is a
+quasi-prefix map, with many useful bindings. These bindings are
+shorter than usual, using mostly unprefixed keys.
+
+hydra is supported out-of-the-box.
+
+#+begin_src emacs-lisp
+(require 'ivy)
+(require 'hydra)
+
+(defun ivy--matcher-desc ()
+  "Return description of `ivy--regex-function'."
+  (let ((cell (assq ivy--regex-function ivy-preferred-re-builders)))
+    (if cell
+        (cdr cell)
+      "other")))
+
+(defhydra hydra-ivy (:hint nil
+                     :color pink)
+  "
+ ^Call^          ^ | ^Options^ | Action _w_/_s_/_a_: %-14s(ivy-action-name)
+-^-^-------------^-+-^-^-------+-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^---------------------------
+ _C-o_ccur       ^ | _C-c_: calling %-5s(if ivy-calling \"on\" \"off\") _C_ase-fold: %-10`ivy-case-fold-search
+ _C-x C-j_ dired ^ | _C-M_: matcher %-5s(ivy--matcher-desc)^^^^^^^^^^^^ _D_efinition of this menu
+ _C-x g_ magit   ^ | _C-S_: sorter^^^^^^^^^^^^^^^^^^^^^^^^^^^^^       ^ _C-f_ done
+"
+  ;; actions
+  ("C-g" keyboard-escape-quit :exit t)
+  ("?" nil)
+  ("C-o" ivy-occur :exit t)
+  ("C-x C-j" my/counsel-dired-jump :exit t)
+  ("C-x g" my/counsel-enter-magit-status :exit t)
+  ("C-f" ivy-immediate-done :exit t)
+  ("C-m" ivy-done :exit t)
+  ("C-c" ivy-toggle-calling)
+  ("C-M" ivy-rotate-preferred-builders)
+  ("C-S" ivy-rotate-sort)
+  ("w" ivy-prev-action)
+  ("s" ivy-next-action)
+  ("a" (let ((ivy-read-action-function #'ivy-read-action-by-key))
+         (ivy-read-action)))
+  ("C" ivy-toggle-case-fold)
+  ("D" (ivy-exit-with-action
+        (lambda (_) (find-function 'hydra-ivy/body)))
+       :exit t))
+
+(defvar ivy-dispatching-done-columns 2
+  "Number of columns to use if the hint does not fit on one line.")
+
+(defvar ivy-dispatching-done-idle nil
+  "When non-nil, the hint will be delayed by this many seconds.")
+
+(defvar ivy-dispatching-done-hydra-exit-keys '(("M-o" nil "back")
+                                               ("C-g" nil))
+  "Keys that can be used to exit `ivy-hydra-read-action'.")
+
+(defun ivy-hydra-read-action (actions)
+  "Select one of the available actions and call `ivy-done'."
+  (interactive)
+  (let* ((extra-actions ivy-dispatching-done-hydra-exit-keys)
+         (doc (concat "action: "
+                      (mapconcat
+                       (lambda (x) (format "[%s] %s" (nth 0 x) (nth 2 x)))
+                       (append (cdr actions)
+                               extra-actions) ", ")))
+         (estimated-len (length doc))
+         (n-columns (if (> estimated-len (window-width))
+                        ivy-dispatching-done-columns
+                      nil))
+         (i 0))
+    (if (null (ivy--actionp actions))
+        (ivy-done)
+      (funcall
+       (eval
+        `(defhydra ivy-read-action (:color teal :columns ,n-columns :idle ,ivy-dispatching-done-idle)
+           "action"
+           ,@(mapcar (lambda (x)
+                       (list (nth 0 x)
+                             `(progn
+                                (setcar (ivy-state-action ivy-last) ,(cl-incf i))
+                                ,(when (eq ivy-exit 'ivy-dispatching-done)
+                                   '(ivy-done)))
+                             (nth 2 x)))
+                     (cdr actions))
+           ,@extra-actions)))
+      nil)))
+
+
+(provide 'ivy-hydra)
+#+end_src

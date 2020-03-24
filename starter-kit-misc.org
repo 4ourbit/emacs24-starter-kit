@@ -285,4 +285,22 @@ description of package using describe-package.
   (global-undo-tree-mode)
 #+END_SRC
 
+** Fast navigation with avy
+[[https://github.com/abo-abo/avy][avy]] is a GNU Emacs package for jumping to visible text using a char-based
+decision tree.
 
+#+begin_src emacs-lisp
+  (starter-kit-install-if-needed 'avy)
+
+  ;; Use C-' since ivy will use it by default in its completion buffer.
+  (global-set-key (kbd "C-'") 'avy-goto-line)
+  (global-set-key (kbd "C-ä") 'avy-goto-line)
+  ;; Where C-' is located at on de-de keyboard.
+
+  ;; Recommended in https://github.com/abo-abo/avy#bindings
+  (eval-after-load "isearch"
+      '(progn
+	 (define-key isearch-mode-map (kbd "C-'") 'avy-isearch)
+	 (define-key isearch-mode-map (kbd "C-ä") 'avy-isearch)))
+  ;; (global-set-key (kbd "C-c C-j") 'avy-resume)
+#+end_src
