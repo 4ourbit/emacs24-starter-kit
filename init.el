@@ -12,6 +12,18 @@
 ;; You may delete these explanatory comments.
 ;(package-initialize)
 
+;; remember this directory
+(setq starter-kit-dir
+      (file-name-directory (or load-file-name (buffer-file-name))))
+
+;; The GC can easily double startup time, so we suppress it at startup by
+;; enforcing a high GC threshold. When idling GC is immediately triggered
+;; and a low threshold is set.
+(let ((gcmh-dir (expand-file-name "src/gcmh" starter-kit-dir)))
+  (add-to-list 'load-path gcmh-dir)
+  (require 'gcmh)
+  (gcmh-mode 1))
+
 (define-key input-decode-map (kbd "M-?") (kbd "C-h"))
 
 (define-key input-decode-map (kbd "C-c C-k") (kbd "C-c C-k"))
@@ -65,9 +77,6 @@
 ;; load the starter kit from the `after-init-hook' so all packages are loaded
 (add-hook 'after-init-hook
  `(lambda ()
-    ;; remember this directory
-    (setq starter-kit-dir
-          ,(file-name-directory (or load-file-name (buffer-file-name))))
     ;; only load org-mode later if we didn't load it just now
     ,(unless (and (getenv "ORG_HOME")
                   (file-directory-p (expand-file-name "lisp"
