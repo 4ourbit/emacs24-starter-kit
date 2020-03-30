@@ -52,6 +52,12 @@ evaluated a theme is activated using the =load-theme= function.
 (auto-compression-mode t)
 #+end_src
 
+** Don’t create lock files
+Working with a single emacs instance.
+#+begin_src emacs-lisp
+(setq create-lockfiles nil)
+#+end_src
+
 ** Save a list of recent files visited.
 #+begin_src emacs-lisp 
 (setq recentf-max-saved-items 999)
