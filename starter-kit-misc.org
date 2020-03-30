@@ -122,39 +122,6 @@ it's possible aspell isn't in your path
             ("english" ,@default))))
 #+end_src
 
-*** ibuffer column customization
-#+BEGIN_SRC emacs-lisp
-  (load-library "ibuffer")
-
-  (setq ibuffer-display-summary nil
-	ibuffer-formats
-      '((mark " "
-	      (name 24 24 :left :elide) ; change: were originally 18s
-	      " " read-only modified
-	      " " (filename-and-process 36 36 :left))))
-
-  (defadvice ibuffer (around ibuffer-point-to-most-recent) ()
-    "Open ibuffer with cursor pointed to most recent buffer name."
-    (let ((recent-buffer-name (buffer-name)))
-      ad-do-it
-      (ibuffer-jump-to-buffer recent-buffer-name)))
-  (ad-activate 'ibuffer)
-
-  (defun my/ibuffer-visit-buffer ()
-    "Visit the buffer on this line."
-    (interactive)
-    (let ((buf (ibuffer-current-buffer t)))
-      (pop-to-buffer buf)))
-
-  (define-key ibuffer-mode-map (kbd "RET")     'my/ibuffer-visit-buffer)
-  (define-key ibuffer-mode-map (kbd "o")       'ibuffer-visit-buffer-other-window-noselect)
-  (define-key ibuffer-mode-map (kbd "C-M-o")   'ibuffer-forward-line)
-  (define-key ibuffer-mode-map (kbd "C-M-S-o") 'ibuffer-backward-line)
-
-  ;;(advice-add 'ibuffer-forward-line :after #'ibuffer-visit-buffer-other-window-noselect)
-  ;;(advice-add 'ibuffer-backward-line :after #'ibuffer-visit-buffer-other-window-noselect)
-#+END_SRC
-
 ** Hippie expand: at times perhaps too hip
 #+begin_src emacs-lisp
   (when (boundp 'hippie-expand-try-functions-list)
@@ -185,7 +152,7 @@ let them live in the =backup/= directory inside of the starter kit.
 
 
 * Starter Kit Misc Additions
-** keys-minor-mode-map
+** my/keys-minor-mode-map
 #+NAME keys-minor-mode-map
 #+BEGIN_SRC emacs-lisp
   (defvar my/keys-minor-mode-map (make-keymap) "my/keys-mode keymap.")
@@ -196,19 +163,25 @@ let them live in the =backup/= directory inside of the starter kit.
   ;; SuperCollider
   (define-key my/keys-minor-mode-map (kbd "C-.") 'keyboard-escape-quit)
 
-  ;; Cycle buffers in current window with ibuffer-bs. Also once in selection
-  ;; buffer pass through repeated C-M-o. Note that "C-M-S-o" is bound to
-  ;; reverse cycling in ibuffer-mode (ivy: minibuffer-i-mode) in its major
-  ;; mode key map.
+  ;; `C-M-o' opens buffer selection with `ibuffer-bs-show'. If the ibuffer
+  ;; window is active (ivy: minibuffer) then pass through this key binding, so
+  ;; in these modes `C-M-o' is free to be used for cyling through buffers.
   (define-key my/keys-minor-mode-map (kbd "C-M-o") ; was `split-line'
     `(menu-item "" ibuffer-bs-show
                 :filter ,(lambda (cmd)
                            (unless (derived-mode-p
+                                    'fundamental-mode
                                     'minibuffer-inactive-mode
                                     'ibuffer-mode) cmd))))
   (advice-add 'ibuffer-bs-show :after #'ibuffer-bs-toggle-all)
 
-  (define-key my/keys-minor-mode-map (kbd "C-o") 'other-window) ; was `open-line'
+  (define-key my/keys-minor-mode-map (kbd "C-o")  ; was `open-line'
+    `(menu-item "" other-window
+                :filter ,(lambda (cmd)
+                           (unless (derived-mode-p
+                                    'fundamental-mode
+                                    'minibuffer-inactive-mode) cmd))))
+
   (defun my/keys-other-window-prev ()
     (interactive)
     (let ((current-prefix-arg '(-1)))
@@ -218,7 +191,9 @@ let them live in the =backup/= directory inside of the starter kit.
   (define-key my/keys-minor-mode-map (kbd "C-u C-o")
     `(menu-item "" window-swap-states
                 :filter ,(lambda (cmd)
-                           (unless (derived-mode-p 'minibuffer-inactive-mode) cmd))))
+                           (unless (derived-mode-p
+                                    'fundamental-mode
+                                    'minibuffer-inactive-mode) cmd))))
 
   (define-key my/keys-minor-mode-map (kbd "M-k")   'kill-this-buffer)
   (define-key my/keys-minor-mode-map (kbd "M-K")   'kill-buffer-and-window)
@@ -229,6 +204,36 @@ let them live in the =backup/= directory inside of the starter kit.
   (add-to-list 'minor-mode-overriding-map-alist
                (cons 'my/keys-minor-mode my/keys-minor-mode-map))
   (my/keys-minor-mode t)
+#+END_SRC
+
+** Ibuffer
+#+BEGIN_SRC emacs-lisp
+  (load-library "ibuffer")
+
+  (setq ibuffer-display-summary nil
+        ibuffer-formats
+      '((mark " "
+              (name 24 24 :left :elide) ; change: were originally 18s
+              " " read-only modified
+              " " (filename-and-process 36 36 :left))))
+
+  (defadvice ibuffer (around ibuffer-point-to-most-recent) ()
+    "Open ibuffer with cursor pointed to most recent buffer name."
+    (let ((recent-buffer-name (buffer-name)))
+      ad-do-it
+      (ibuffer-jump-to-buffer recent-buffer-name)))
+  (ad-activate 'ibuffer)
+
+  (defun my/ibuffer-visit-buffer ()
+    "Visit the buffer on this line."
+    (interactive)
+    (let ((buf (ibuffer-current-buffer t)))
+      (pop-to-buffer buf)))
+
+  (define-key ibuffer-mode-map (kbd "RET")     'my/ibuffer-visit-buffer)
+  (define-key ibuffer-mode-map (kbd "o")       'ibuffer-visit-buffer-other-window-noselect)
+  (define-key ibuffer-mode-map (kbd "C-M-o")   'ibuffer-forward-line)
+  (define-key ibuffer-mode-map (kbd "C-M-S-o") 'ibuffer-backward-line)
 #+END_SRC
 
 ** Expand-region
