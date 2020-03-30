@@ -276,9 +276,16 @@ turned on by some modes based on the value of
 #+END_SRC
 
 ** Toggle  Useful Emacs Modes
+*** Indicate empty lines
 #+BEGIN_SRC emacs-lisp
   (toggle-indicate-empty-lines)
 #+END_SRC
+
+*** Truncate lines in grep and occur modes
+#+begin_src emacs-lisp
+  (add-hook 'grep-mode-hook #'toggle-truncate-lines)
+  (add-hook 'occur-mode-hook #'toggle-truncate-lines)
+#+end_src
 
 *** Auto revert buffers when changed externally
 #+BEGIN_SRC emacs-lisp
@@ -294,7 +301,7 @@ turned on by some modes based on the value of
   (desktop-read)
 #+END_SRC
 
-** Undo/Redo
+** Undo/redo with undo-tree-mode
 Undo/redo history is a tree but manipulating this tree is a challenge. With
 undo-tree you can press C-x u and view graphical representation of undo/redo
 history. In undo-tree buffer press d to toggle diff and t to toggle timestamps,
