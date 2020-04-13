@@ -18,6 +18,13 @@ Key Bindings.
 (global-set-key (kbd "C-M-d") 'kill-line) ; was: down-list
 #+end_src
 
+** Key bindings
+Like shortcuts in Chrome OS
+#+begin_src emacs-lisp
+(global-set-key (kbd "C-M-#") 'describe-bindings)
+(global-set-key (kbd "C-M--") 'describe-bindings)
+#+end_src
+
 ** Completion that uses many different methods to find options.
 #+begin_src emacs-lisp 
 (global-set-key (kbd "M-/") 'hippie-expand)
