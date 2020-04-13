@@ -246,6 +246,8 @@ let them live in the =backup/= directory inside of the starter kit.
   (starter-kit-install-if-needed 'expand-region)
   (define-key my/keys-minor-mode-map (kbd "M-SPC")   'er/expand-region)  ;; was `mark-paragraph'
   (define-key my/keys-minor-mode-map (kbd "M-S-SPC") 'er/contract-region)
+  (define-key my/keys-minor-mode-map (kbd "M-h") 'er/expand-region)  ;; was `mark-paragraph'
+  (define-key my/keys-minor-mode-map (kbd "M-H") 'er/contract-region)
 #+END_SRC
 
 ** Multiple-cursors
