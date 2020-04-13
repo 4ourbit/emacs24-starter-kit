@@ -24,6 +24,8 @@
   (require 'gcmh)
   (gcmh-mode 1))
 
+(define-key input-decode-map (kbd "C-S-v") (kbd "C-y"))
+
 (define-key input-decode-map (kbd "M-?") (kbd "C-h"))
 
 (define-key input-decode-map (kbd "C-c C-k") (kbd "C-c C-k"))
