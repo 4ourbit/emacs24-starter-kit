@@ -176,7 +176,7 @@ let them live in the =backup/= directory inside of the starter kit.
     `(menu-item "" ibuffer-bs-show
                 :filter ,(lambda (cmd)
                            (unless (derived-mode-p
-                                    'fundamental-mode
+                                    'ivy-mode
                                     'minibuffer-inactive-mode
                                     'ibuffer-mode) cmd))))
   (advice-add 'ibuffer-bs-show :after #'ibuffer-bs-toggle-all)
@@ -185,7 +185,6 @@ let them live in the =backup/= directory inside of the starter kit.
     `(menu-item "" other-window
                 :filter ,(lambda (cmd)
                            (unless (derived-mode-p
-                                    'fundamental-mode
                                     'minibuffer-inactive-mode) cmd))))
 
   (defun my/keys-other-window-prev ()
