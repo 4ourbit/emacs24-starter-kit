@@ -157,6 +157,11 @@ This is instead of opening them in dired, much the same like ido does.
   (define-key counsel-find-file-map (kbd "C-x C-j") 'my/counsel-dired-jump)
 #+end_src
 
+*** counsel-yank-pop
+#+begin_src emacs-lisp
+  (advice-add 'browse-kill-ring :override 'counsel-yank-pop)
+#+end_src
+
 *** counsel-org-capture
 #+begin_src emacs-lisp
   (advice-add 'org-capture :override 'counsel-org-capture)

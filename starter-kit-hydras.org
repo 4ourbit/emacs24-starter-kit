@@ -106,22 +106,17 @@ all hydra key bindings to `global-map'.
 #+end_src
 
 *** Yank
-
-Repeatable yank(-pop) command, with an option to switch to a list view using `helm` or
-`browse-kill-ring`.
+Repeatable yank(-pop) command, with an option to switch to a list view
+using `browse-kill-ring` or `ivy`.
 
 #+begin_src emacs-lisp
   (starter-kit-install-if-needed 'browse-kill-ring)
-  ;; (browse-kill-ring-default-keybindings)
-  (defhydra hydra-yank-pop ()
+  (defhydra hydra-yank-pop (global-map "")
     "yank"
-    ("C-y" yank nil)
-    ("M-y" yank-pop nil)
-    ("y" (yank-pop 1) "next")
-    ("Y" (yank-pop -1) "prev")
-    ("l" browse-kill-ring "list" :color blue))   ; or helm-show-kill-ring
-  (global-set-key (kbd "M-y") #'hydra-yank-pop/yank-pop)
-  (global-set-key (kbd "C-y") #'hydra-yank-pop/yank)
+    ("C-y" yank "yank")
+    ("M-y" yank-pop "next")
+    ("C-M-y" browse-kill-ring "browse" :color blue) ; ivy: counsel-pop-yank
+    ("q" nil "quit" :color blue))
 #+end_src
 
 *** Goto Line
