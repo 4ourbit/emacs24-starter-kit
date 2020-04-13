@@ -147,11 +147,11 @@ This is instead of opening them in dired, much the same like ido does.
   (defun my/counsel-dired-jump ()
     "Visit the directory contaning the current FILE in Dired."
     (interactive)
-    (let ((input (ivy--input)))
-	(ivy-quit-and-run
-	   (let ((default-directory (or ivy--directory default-directory))
-		 (current (ivy-state-current ivy-last)))
-	     (dired-jump nil dir)))))
+    (ivy-exit-with-action
+     #'(lambda (str)
+	 (let* ((file (expand-file-name str))
+		(default-directory (file-name-directory file)))
+	   (dired-jump nil default-directory)))))
 
   (define-key ivy-switch-buffer-map (kbd "C-x C-j") 'my/counsel-dired-jump)
   (define-key counsel-find-file-map (kbd "C-x C-j") 'my/counsel-dired-jump)
