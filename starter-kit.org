@@ -159,7 +159,7 @@ general starter-kit updates without conflict.
      
      Finally you can load just those subsections of a file which have
      a specific tag, so to load just the two sections of
-     =starter-kit-misc-recommended.org= which are tagged =visual= add
+     =starter-kit-gnus.org= which are tagged =visual= add
      the following to your personal initialization.  Note: header id's
      take priority over tags.
      #+begin_src emacs-lisp
@@ -191,7 +191,6 @@ generally useful please submit it to the starter kit core!
 - [[file:starter-kit-eshell.org][eshell]]
 - [[file:starter-kit-gnus.org][gnus]]
 - [[file:starter-kit-lisp.org][lisp]]
-- [[file:starter-kit-misc-recommended.org][misc-recommended]]
 - [[file:starter-kit-org.org][org]]
 
 ** Emacs Lisp Package Archive
@@ -306,12 +305,7 @@ interested in the actual code implementing the starter kit.
     marked with the given tag will be loaded.
     
     For example, to load all of starter-kit-lisp.org simply
-    add (starter-kit-load \"lisp\") to your configuration.
-    
-    To load only the 'window-system' config from
-    starter-kit-misc-recommended.org add
-     (starter-kit-load \"misc-recommended\" \"window-system\")
-    to your configuration."
+    add (starter-kit-load \"lisp\") to your configuration."
       (let ((file (expand-file-name (if (string-match "starter-kit-.+\.org" file)
                                         file
                                       (format "starter-kit-%s.org" file))

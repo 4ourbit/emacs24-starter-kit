@@ -19,6 +19,18 @@ Downloaded themes may be saved to the =themes/= directory in the base
 of the starter kit which ignored by git.  Once downloaded and
 evaluated a theme is activated using the =load-theme= function.
 
+** Window systems -- remove visual cruft                             :visual:
+   :PROPERTIES:
+   :CUSTOM_ID: window-system
+   :END:
+#+name: starter-kit-window-view-stuff-recommended
+#+begin_src emacs-lisp 
+(when window-system
+  (menu-bar-mode -1)
+  (tooltip-mode -1)
+  (tool-bar-mode -1))
+#+end_src
+
 ** Window systems
 #+srcname: starter-kit-window-view-stuff
 #+begin_src emacs-lisp
