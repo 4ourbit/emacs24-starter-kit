@@ -10,7 +10,7 @@ This is part of the [[file:starter-kit.org][Emacs Starter Kit]].
 #+begin_src emacs-lisp
   (setq dired-dwim-target 1
 	dired-isearch-filenames 'dwim
-	dired-listing-switches "-v -AlR --group-directories-first --human-readable"
+	dired-listing-switches "-v -AlR --group-directories-first --human-readable --ignore=.git"
         dired-trivial-filenames "\\`\\.\\.?\\'\\|\\`#\\|\\`\\.")
 #+end_src
 
