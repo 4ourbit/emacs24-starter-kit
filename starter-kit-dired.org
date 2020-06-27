@@ -54,6 +54,7 @@ Loading Dired-X will automatically put on the hook ‘dired-extra-startup’ to
   (defun my/load-dired-x () (load-library "dired-x"))
   (add-hook 'dired-load-hook #'my/load-dired-x)
 #+end_src
+
 ** Key bindings
 Also see [[./starter-kit-hydras.org][starter-kit-hydras.org]] for additional key bindings.
 
@@ -103,16 +104,21 @@ Try to guess a useful default value for FILE2, as follows:
 #+begin_src emacs-lisp
   (defun my/dired-maybe-insert-subdir (dirname &optional
 					    switches no-error-if-not-dir-p)
-    (interactive
-     (list (dired-get-filename)
-	   (if current-prefix-arg
-	       (read-string "Switches for listing: "
-			    (or dired-subdir-switches dired-actual-switches)))))
-    (let ((opoint (point)))
-      (dired-maybe-insert-subdir dirname switches nil)
-      (if (bound-and-true-p dired-hide-details-mode)
-	  (recenter 1)
-	(recenter 2))))
+      (interactive
+       (list (dired-get-filename)
+	     (if current-prefix-arg
+		 (read-string "Switches for listing: "
+			      (or dired-subdir-switches dired-actual-switches)))))
+     (let ((filename (dired-get-filename)))
+	   (if (file-directory-p filename)
+	       (let ((opoint (point)))
+		 (dired-maybe-insert-subdir dirname switches nil)
+		 (if (bound-and-true-p dired-hide-details-mode)
+		     (recenter 1)
+		   (recenter 2)))
+	     (if (string-match-p tramp-file-name-regexp filename)
+		     (dired-find-file)
+		   (browse-url-of-dired-file)))))
 #+end_src
 
 *** my/dired-do-compress-to
@@ -170,6 +176,7 @@ Try to guess a useful default value for FILE2, as follows:
     (define-key dired-mode-map (kbd "c")           'my/dired-do-compress-to)
     (define-key dired-mode-map (kbd "e")           'my/diredp-ediff)
     (define-key dired-mode-map (kbd "C-M-i")       'dired-jump) ; like in org-mode
+    (define-key dired-mode-map (kbd "<return>")    'my/dired-maybe-insert-subdir)
     (define-key dired-mode-map (kbd "<backspace>") 'dired-jump) ; like in Windows Explorer
 
     ;; use same keys with modifiers as speed keys
@@ -379,7 +386,7 @@ topdir: %(eval dired-directory)
     _w_ copy path      _G_ chgrp         _F_ open markedˣ     _s_ sort
     _C_ copy           ^ ^               _D_ delete marked    ^ ^
     _R_ rename         Directory         ^ ^                  ^ ^
-    ^ ^                ---------         ^ ^                _C-M-i_ jump
+    ^ ^                ---------         ^ ^                  _C-M-i_ jump
     _e_ Ediff          _=_ diff          ^ ^                  _C-o_ view other window
     _c_ compress to    _+_ mkdir         _A_ find regexp      _o_ other window
     _Z_ (un)compress   _Z_ (un)tar.gz    _Q_ repl regexp      _g_ revert buf
