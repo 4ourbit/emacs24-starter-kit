@@ -214,7 +214,6 @@ let them live in the =backup/= directory inside of the starter kit.
 
   (define-key my/keys-minor-mode-map (kbd "M-k")   'kill-this-buffer)
   (define-key my/keys-minor-mode-map (kbd "M-K")   'kill-buffer-and-window)
-  (define-key my/keys-minor-mode-map (kbd "C-z")   'undo)
   (define-key my/keys-minor-mode-map (kbd "M--")   'completion-at-point) ; "M-/" @ us-en-layout
   (define-key my/keys-minor-mode-map (kbd "M-j")   'recenter-top-bottom) ; was `comment-indent-new-line'
 
@@ -325,6 +324,11 @@ description of package using describe-package.
   (starter-kit-install-if-needed 'undo-tree)
   (require 'undo-tree)
   (global-undo-tree-mode)
+
+  (define-key my/keys-minor-mode-map (kbd "C-z") 'undo-tree-undo)
+  (define-key my/keys-minor-mode-map (kbd "C-S-z") 'undo-tree-redo)
+  (define-key my/keys-minor-mode-map (kbd "s-z") 'undo-tree-undo)
+  (define-key my/keys-minor-mode-map (kbd "s-S-z") 'undo-tree-redo)
 #+END_SRC
 
 ** Fast navigation with avy
