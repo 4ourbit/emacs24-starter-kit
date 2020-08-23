@@ -280,14 +280,14 @@ _B_uffers (3-way)   _F_iles (3-way)                          _w_ordwise
   "
     Buffer             Actions         Marks            Display
   ---------------------------------------------------------------------------
-    _d_ flag deletion   _/_ filter          _m_ mark            _(_ details
-    _x_ expunge         ^ ^                 _*_ mark special    _)_ omit-mode
+    _d_ flag deletion   _/_ filter          _m_ mark            ^ ^
+    _x_ expunge         ^ ^                 _*_ mark special    ^ ^
     ^ ^                 ^ ^                 ^ ^                 _,_ sort toogle
     _w_ copy filename   _Q_ replace marked  _O_ occur marked    _s_ sort special
     _C_ copy buffer     _I_ regexp marked   _A_ view marked     ^ ^
     ^ ^                 ^ ^                 _S_ save marked     _H_ other frame
     ^ ^                 ^ ^                 _V_ revert marked   _o_ other window
-    _!_ shell file      ^ ^                 _D_ delete marked   _g_ revert buf
+    _!_ shell file      ^ ^                 _D_ kill marked     _g_ revert buf
     "
   ("d" ibuffer-mark-for-delete)
   ("x" ibuffer-do-kill-on-deletion-marks)
