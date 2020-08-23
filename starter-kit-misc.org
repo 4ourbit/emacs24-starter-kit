@@ -266,6 +266,7 @@ let them live in the =backup/= directory inside of the starter kit.
   (starter-kit-install-if-needed 'multiple-cursors)
   (load-library "multiple-cursors")
   (define-key my/keys-minor-mode-map (kbd "C-M-SPC") 'mc/mark-next-like-this) ; was `mark-sexp'
+  (define-key my/keys-minor-mode-map (kbd "C-M-S-SPC") 'mc/unmark-next-like-this) ; was `mark-sexp'
 #+END_SRC
 
 ** Ethan-Wspace
